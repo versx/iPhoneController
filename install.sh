@@ -14,8 +14,17 @@ brew install --HEAD ideviceinstaller
 brew unlink ideviceinstaller && brew link ideviceinstaller
 sudo chmod -R 777 /var/db/lockdown/
 
+# Download .NET Core 2.1 installer
+wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh
+
+# Make installer executable
+chmod +x dotnet-install.sh
+
 # Install .NET Core 2.1
-wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh && rm dotnet-install.sh
+./dotnet-install.sh
+
+# Delete .NET Core 2.1 installer
+rm dotnet-install.sh
 
 # Clone repository
 git clone https://github.com/versx/iPhoneController -b sqlite

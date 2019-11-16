@@ -16,6 +16,9 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    //TODO: Clear logs folder.
+    //TODO: Get logs from UIC folder instead of using `find`
+
     public class PhoneControl
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_CTRL");
@@ -55,7 +58,7 @@
             var eb = new DiscordEmbedBuilder
             {
                 Description = devicesString,
-                Title = "Device List",
+                Title = $"{Environment.MachineName} Device List ({devices.Count.ToString("N0")})",
                 Color = DiscordColor.Blurple
             };
             await ctx.RespondAsync(embed: eb);
@@ -231,18 +234,22 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            //if (!_dep.Config.Devices.ContainsKey(phoneName))
-            //{
-            //    _logger.Warn($"{phoneName} does not exist in device list, skipping full log.");
-            //    return;
-            //}
+            var realDevices = await GetDevices();
+            if (!realDevices.ContainsKey(phoneName))
+            {
+                _logger.Warn($"{phoneName} does not exist in device list, skipping full log.");
+                return;
+            }
 
-            //var args = $". -name \"*{phoneName}*.full.log*\" -mtime -30m | head -1";
-            var args = $". -name *{phoneName}*.full*.log | head -1";
-            //var args = $". -amin 1 -name \"*{phoneName}*.full*.log\" ! -name \"*full\"* -print";
-            var output = Shell.Execute("find", args, out var exitCode);
+            var output = GetLatestLog(phoneName, true);
             output = string.IsNullOrEmpty(output) ? $"Failed to get latest full log for device {phoneName}." : output;
-            await ctx.RespondAsync(output);
+            if (File.Exists(output))
+                output = File.ReadAllText(output);
+
+            if (output.Length > 1500)
+                output = output.Substring(output.Length - 1494, 1494);
+
+            await ctx.RespondAsync($"```{output}```");
         }
 
         [
@@ -259,16 +266,22 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            //if (!_dep.Config.Devices.ContainsKey(phoneName))
-            //{
-            //    _logger.Warn($"{phoneName} does not exist in device list, skipping full log.");
-            //    return;
-            //}
+            var realDevices = await GetDevices();
+            if (!realDevices.ContainsKey(phoneName))
+            {
+                _logger.Warn($"{phoneName} does not exist in device list, skipping full log.");
+                return;
+            }
 
-            var args = $". -amin 1 -name \"*{phoneName}*.debug*.log\" -print";
-            var output = Shell.Execute("find", args, out var exitCode);
+            var output = GetLatestLog(phoneName, false);
             output = string.IsNullOrEmpty(output) ? $"Failed to get latest debug log for device {phoneName}." : output;
-            await ctx.RespondAsync(output);
+            if (File.Exists(output))
+                output = File.ReadAllText(output);
+
+            if (output.Length > 1500)
+                output = output.Substring(output.Length - 1494, 1494);
+
+            await ctx.RespondAsync($"```{output}```");
         }
 
         #region Private Methods
@@ -321,6 +334,16 @@
 
                 return devices.ToDictionary(x => x.Name, y => y.Uuid);
             }
+        }
+
+        private string GetLatestLog(string deviceName, bool full)
+        {
+            var managerFolder = Path.GetDirectoryName(_dep.Config.SQLiteFilePath);
+            var logsFolder = Path.Combine(managerFolder, "Logs");
+            var logs = Directory.GetFiles(logsFolder, $"*{deviceName}{(full ? "*.full.log" : "*.debug.log")}");
+            var logFile = logs.FirstOrDefault(x =>
+                Math.Round(DateTime.Now.Subtract(File.GetLastWriteTime(x)).TotalMinutes) <= 60); //Log was within the last hour, TODO: Change to 1-5 minutes, maybe configurable?
+            return logFile;
         }
 
         #endregion
