@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhoneController", "iPhoneController\iPhoneController.csproj", "{8D3F3575-CB04-4711-859F-68A5FB528A8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhoneController", "src\iPhoneController.csproj", "{8D3F3575-CB04-4711-859F-68A5FB528A8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
