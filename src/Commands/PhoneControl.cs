@@ -16,9 +16,6 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    //TODO: Clear logs folder.
-    //TODO: Get logs from UIC folder instead of using `find`
-
     public class PhoneControl
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_CTRL");
@@ -282,6 +279,25 @@
                 output = output.Substring(output.Length - 1494, 1494);
 
             await ctx.RespondAsync($"```{output}```");
+        }
+
+        [
+            Command("log-clear"),
+            Description("")
+        ]
+        public async Task ClearLogsAsync(CommandContext ctx)
+        {
+            var managerFolder = Path.GetDirectoryName(_dep.Config.SQLiteFilePath);
+            var logsFolder = Path.Combine(managerFolder, "Logs");
+            var logFiles = Directory.GetFiles(logsFolder, "*.log");
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            for (var i = 0; i < logFiles.Length; i++)
+            {
+                File.Delete(logFiles[i]);
+            }
+            sw.Stop();
+            await ctx.RespondAsync($"All log files deleted for {Environment.MachineName} (took {sw.Elapsed}).");
         }
 
         #region Private Methods
