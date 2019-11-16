@@ -10,8 +10,11 @@
     using DSharpPlus.CommandsNext.Attributes;
     using DSharpPlus.Entities;
 
+    using iPhoneController.Data;
     using iPhoneController.Diagnostics;
     using iPhoneController.Utils;
+
+    using Microsoft.EntityFrameworkCore;
 
     public class PhoneControl
     {
@@ -35,12 +38,13 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            var devices = _dep.Config.Devices.Keys.ToList();
+            var realDevices = GetDevices();
+            var devices = realDevices.Keys.ToList();
             var devicesString = string.Empty;
             for (var i = 0; i < devices.Count; i++)
             {
                 var name = devices[i];
-                var uuid = _dep.Config.Devices[name];
+                var uuid = realDevices[name];
                 devicesString += $"**{name}**: {uuid}\r\n";
             }
 
@@ -67,17 +71,18 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
+            var realDevices = GetDevices();
             var devices = phoneNames.Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
-                if (!_dep.Config.Devices.ContainsKey(name))
+                if (!realDevices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping reboot.");
                     continue;
                 }
 
-                var uuid = _dep.Config.Devices[name];
+                var uuid = realDevices[name];
                 var output = Shell.Start("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
                 var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
                 await ctx.RespondAsync(message);
@@ -98,18 +103,19 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
+            var realDevices = GetDevices();
             var devices = phoneNames.Split(',');
             var devicesFailed = new Dictionary<string, string>();
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
-                if (!_dep.Config.Devices.ContainsKey(name))
+                if (!realDevices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping screenshot.");
                     continue;
                 }
 
-                var uuid = _dep.Config.Devices[name];
+                var uuid = realDevices[name];
                 var fileName = $"{uuid}.jpg";
                 if (File.Exists(fileName))
                 {
@@ -153,17 +159,18 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
+            var realDevices = GetDevices();
             var devices = phoneNames.Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
-                if (!_dep.Config.Devices.ContainsKey(name))
+                if (!realDevices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping remove uic.");
                     continue;
                 }
 
-                var uuid = _dep.Config.Devices[name];
+                var uuid = realDevices[name];
                 var args = $"--id {uuid} --uninstall_only --bundle_id com.apple.test.RealDeviceMap-UIControlUITests-Runner";
                 Shell.Start("ios-deploy", args, out var exitCode);
                 //TODO: Proper remove uic response
@@ -185,17 +192,18 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
+            var realDevices = GetDevices();
             var devices = phoneNames.Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
-                if (!_dep.Config.Devices.ContainsKey(name))
+                if (!realDevices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping remove pogo.");
                     continue;
                 }
 
-                var uuid = _dep.Config.Devices[name];
+                var uuid = realDevices[name];
                 var args = $"--id {uuid} --uninstall_only --bundle_id com.nianticlabs.pokemongo";
                 Shell.Start("ios-deploy", args, out var exitCode);
                 //TODO: Proper remove pogo response
@@ -280,6 +288,33 @@
         private bool IsValidChannel(ulong channelId)
         {
             return _dep.Config.RequiredRoles.Count == 0 || _dep.Config.RequiredRoles.Contains(channelId);
+        }
+
+        private Dictionary<string, string> GetDevices()
+        {
+            var sqliteFilePath = _dep.Config.SQLiteFilePath;
+            if (!File.Exists(sqliteFilePath))
+            {
+                _logger.Warn($"Failed to get device list, {sqliteFilePath} does not exist.");
+                return null;
+            }
+
+            using (var db = DbContextFactory.Create($"Data Source={sqliteFilePath};"))
+            {
+                var devices = db.Devices
+                    .Where(x => x.Uuid != "default")
+                    .ToListAsync()
+                    .GetAwaiter()
+                    .GetResult();
+
+                if (devices.Count == 0)
+                {
+                    _logger.Warn($"No devices in sqlite database.");
+                    return null;
+                }
+
+                return devices.ToDictionary(x => x.Name, y => y.Uuid);
+            }
         }
     }
 }

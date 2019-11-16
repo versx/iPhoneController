@@ -5,7 +5,5 @@
   "channelId": 0000000001,
   "commandPrefix": "!",
   "requiredRoles": [0000000001],
-  "devices": {
-    "iPhone": "uuid"
-  }
+  "sqliteFilePath": "/Users/test/UIC/Manager/db.sqlite"
 }

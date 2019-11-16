@@ -1,16 +1,21 @@
 ﻿namespace iPhoneController
 {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
+
+    using iPhoneController.Data;
+
     class Program
     {
         static void Main(string[] args)
         {
-//#if Linux
-//        Console.WriteLine("Built on Linux!"); 
-//#elif OSX
-//        Console.WriteLine("Built on macOS!"); 
-//#elif Windows
-//        Console.WriteLine("Built in Windows!"); 
-//#endif
+            //#if Linux
+            //        Console.WriteLine("Built on Linux!"); 
+            //#elif OSX
+            //        Console.WriteLine("Built on macOS!"); 
+            //#elif Windows
+            //        Console.WriteLine("Built in Windows!"); 
+            //#endif
 
             var logger = Diagnostics.EventLogger.GetLogger();
             var config = Configuration.Config.Load(Strings.ConfigFileName);

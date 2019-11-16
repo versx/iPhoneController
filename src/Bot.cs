@@ -24,7 +24,7 @@
 
         public Bot(Config config)
         {
-            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, Devices={config.Devices.Count}]");
+            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelId={config.ChannelId}, Devices={config.SQLiteFilePath}]");
             _config = config;
 
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>
@@ -58,7 +58,6 @@
                 UseInternalLogHandler = true
             });
             _client.Ready += Client_Ready;
-            //_client.MessageCreated += Client_MessageCreated;
             _client.ClientErrored += Client_ClientErrored;
             _client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
 
@@ -109,7 +108,6 @@
             _logger.Info($"[DISCORD] Name: {e.Client.CurrentUser.Username}#{e.Client.CurrentUser.Discriminator}");
             _logger.Info($"[DISCORD] Email: {e.Client.CurrentUser.Email}");
 
-            //await CreateEmojis();
             await Task.CompletedTask;
         }
 

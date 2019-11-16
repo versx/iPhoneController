@@ -32,8 +32,8 @@
         [JsonProperty("requiredRoles")]
         public List<ulong> RequiredRoles { get; set; }
 
-        [JsonProperty("devices")]
-        public Dictionary<string, string> Devices { get; set; }
+        [JsonProperty("sqliteFilePath")]
+        public string SQLiteFilePath { get; set; }
 
         #endregion
 
@@ -41,7 +41,6 @@
 
         public Config()
         {
-            Devices = new Dictionary<string, string>();
             RequiredRoles = new List<ulong>();
         }
 
