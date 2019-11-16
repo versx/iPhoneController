@@ -21,10 +21,14 @@
         private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_CTRL");
         private readonly Dependencies _dep;
 
+        #region Constructor
+
         public PhoneControl(Dependencies dep)
         {
             _dep = dep;
         }
+
+        #endregion
 
         [
             Command("list"),
@@ -38,7 +42,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            var realDevices = GetDevices();
+            var realDevices = await GetDevices();
             var devices = realDevices.Keys.ToList();
             var devicesString = string.Empty;
             for (var i = 0; i < devices.Count; i++)
@@ -71,7 +75,9 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            var realDevices = GetDevices();
+            //TODO: Check if idevicediagnostics is installed.
+
+            var realDevices = await GetDevices();
             var devices = phoneNames.Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
@@ -83,7 +89,7 @@
                 }
 
                 var uuid = realDevices[name];
-                var output = Shell.Start("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
+                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
                 var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
                 await ctx.RespondAsync(message);
             }
@@ -103,7 +109,9 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            var realDevices = GetDevices();
+            //TODO: Check if idevicescreenshot is installed.
+
+            var realDevices = await GetDevices();
             var devices = phoneNames.Split(',');
             var devicesFailed = new Dictionary<string, string>();
             for (var i = 0; i < devices.Length; i++)
@@ -122,11 +130,11 @@
                     File.Delete(fileName);
                 }
 
-                var output = Shell.Start("idevicescreenshot", $"-u {uuid} {uuid}.jpg", out var exitCode);
+                var output = Shell.Execute("idevicescreenshot", $"-u {uuid} {fileName}", out var exitCode);
                 if (exitCode == 0)
                 {
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                    await ctx.RespondWithFileAsync($"{uuid}.jpg");
+                    await ctx.RespondWithFileAsync(fileName);
                     continue;
                 }
 
@@ -159,7 +167,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            var realDevices = GetDevices();
+            var realDevices = await GetDevices();
             var devices = phoneNames.Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
@@ -172,9 +180,8 @@
 
                 var uuid = realDevices[name];
                 var args = $"--id {uuid} --uninstall_only --bundle_id com.apple.test.RealDeviceMap-UIControlUITests-Runner";
-                Shell.Start("ios-deploy", args, out var exitCode);
-                //TODO: Proper remove uic response
-                await ctx.RespondAsync($"Removed UIC from: {phoneNames}");
+                var output = Shell.Execute("ios-deploy", args, out var exitCode);
+                await ctx.RespondAsync($"Removed UIC from {name}\r\nOutput: {output}");
             }
         }
 
@@ -192,7 +199,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            var realDevices = GetDevices();
+            var realDevices = await GetDevices();
             var devices = phoneNames.Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
@@ -205,9 +212,8 @@
 
                 var uuid = realDevices[name];
                 var args = $"--id {uuid} --uninstall_only --bundle_id com.nianticlabs.pokemongo";
-                Shell.Start("ios-deploy", args, out var exitCode);
-                //TODO: Proper remove pogo response
-                await ctx.RespondAsync($"Removed Pokemon Go from: {phoneNames}");
+                var output = Shell.Execute("ios-deploy", args, out var exitCode);
+                await ctx.RespondAsync($"Removed Pokemon Go from {name}\r\nOutput: {output}");
             }
         }
 
@@ -234,7 +240,7 @@
             //var args = $". -name \"*{phoneName}*.full.log*\" -mtime -30m | head -1";
             var args = $". -name *{phoneName}*.full*.log | head -1";
             //var args = $". -amin 1 -name \"*{phoneName}*.full*.log\" ! -name \"*full\"* -print";
-            var output = Shell.Start("find", args, out var exitCode);
+            var output = Shell.Execute("find", args, out var exitCode);
             output = string.IsNullOrEmpty(output) ? $"Failed to get latest full log for device {phoneName}." : output;
             await ctx.RespondAsync(output);
         }
@@ -260,10 +266,12 @@
             //}
 
             var args = $". -amin 1 -name \"*{phoneName}*.debug*.log\" -print";
-            var output = Shell.Start("find", args, out var exitCode);
+            var output = Shell.Execute("find", args, out var exitCode);
             output = string.IsNullOrEmpty(output) ? $"Failed to get latest debug log for device {phoneName}." : output;
             await ctx.RespondAsync(output);
         }
+
+        #region Private Methods
 
         private bool HasRequiredRoles(DiscordMember member)
         {
@@ -290,7 +298,7 @@
             return _dep.Config.RequiredRoles.Count == 0 || _dep.Config.RequiredRoles.Contains(channelId);
         }
 
-        private Dictionary<string, string> GetDevices()
+        private async Task<Dictionary<string, string>> GetDevices()
         {
             var sqliteFilePath = _dep.Config.SQLiteFilePath;
             if (!File.Exists(sqliteFilePath))
@@ -301,11 +309,9 @@
 
             using (var db = DbContextFactory.Create($"Data Source={sqliteFilePath};"))
             {
-                var devices = db.Devices
+                var devices = await db.Devices
                     .Where(x => x.Uuid != "default")
-                    .ToListAsync()
-                    .GetAwaiter()
-                    .GetResult();
+                    .ToListAsync();
 
                 if (devices.Count == 0)
                 {
@@ -315,6 +321,32 @@
 
                 return devices.ToDictionary(x => x.Name, y => y.Uuid);
             }
+        }
+
+        #endregion
+    }
+
+    public class PhoneManager
+    {
+        private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_MGR");
+
+        private readonly Dictionary<string, string> _devices;
+
+        public IReadOnlyDictionary<string, string> Devices => _devices;
+
+        public PhoneManager()
+        {
+            _devices = new Dictionary<string, string>();
+        }
+
+        public bool RestartDevice(string name)
+        {
+            return true;
+        }
+
+        public string Screenshot(string name)
+        {
+            return string.Empty;
         }
     }
 }

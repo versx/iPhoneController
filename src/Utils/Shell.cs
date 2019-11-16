@@ -5,7 +5,7 @@
 
     public static class Shell
     {
-        public static string Start(string cmd, string args, out int exitCode)
+        public static string Execute(string cmd, string args, out int exitCode)
         {
             var psi = new ProcessStartInfo
             {
