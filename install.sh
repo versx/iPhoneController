@@ -1,17 +1,34 @@
 # Install brew if not already installed
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-# Install libimobiledevice
+# Update Homebrew
 brew update
+
+# Uninstall libimobiledevice if already installed
 brew uninstall --ignore-dependencies libimobiledevice
+
+# Uninstall usbmux daemon
 brew uninstall --ignore-dependencies usbmuxd
+
+# Install latest usbmux daemon
 brew install --HEAD usbmuxd
-brew unlink usbmuxd
-brew link usbmuxd
+
+# Recreate usbmux daemon link
+brew unlink usbmuxd && brew link usbmuxd
+
+# Install latest libimobiledevice
 brew install --HEAD libimobiledevice
+
+# Recreate ilibmobiledevice link
 brew unlink libimobiledevice && brew link libimobiledevice
+
+# Install latest idevice installer
 brew install --HEAD ideviceinstaller
+
+# Recreate ideviceinstaller link
 brew unlink ideviceinstaller && brew link ideviceinstaller
+
+# Allow Execute, Read, and Write permissions on lockdown folder
 sudo chmod -R 777 /var/db/lockdown/
 
 # Download .NET Core 2.1 installer

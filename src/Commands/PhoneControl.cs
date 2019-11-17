@@ -16,6 +16,8 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    //TODO: Restart all devices
+
     public class PhoneControl
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_CTRL");
@@ -300,6 +302,18 @@
             await ctx.RespondAsync($"All log files deleted for {Environment.MachineName} (took {sw.Elapsed}).");
         }
 
+        [
+            Command("kill"),
+            Description("")
+        ]
+        public async Task KillAsync(CommandContext ctx,
+            [Description(""), RemainingText]
+            string processName)
+        {
+            var output = Shell.Execute("killall", processName, out var exitCode);
+            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : output);
+        }
+
         #region Private Methods
 
         private bool HasRequiredRoles(DiscordMember member)
@@ -342,7 +356,7 @@
                     .Where(x => x.Uuid != "default")
                     .ToListAsync();
 
-                if (devices.Count == 0)
+                if (devices?.Count == 0)
                 {
                     _logger.Warn($"No devices in sqlite database.");
                     return null;
