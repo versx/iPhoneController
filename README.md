@@ -1,5 +1,5 @@
 # iPhoneController  
-Reboot, grab a screenshot, view latest debug or full logs, remove Pokemon Go or UIC all from Discord.  
+Reboot, grab a screenshot, view latest debug or full logs, remove Pokemon Go or UIC from multiple devices all from Discord.  
 
 ## Commands  
 - `list` - Retrieve a list of all available devices.  
