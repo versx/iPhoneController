@@ -18,7 +18,7 @@
                 WindowStyle = ProcessWindowStyle.Hidden
             };
             var p = Process.Start(psi);
-            var output = p.StandardOutput.ReadToEndAsync();
+            var output = p.StandardOutput.ReadToEndAsync().GetAwaiter().GetResult();
             p.OutputDataReceived += (sender, e) =>
             {
                 Console.WriteLine("[OUT] " + e.Data);
