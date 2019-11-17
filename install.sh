@@ -1,4 +1,4 @@
-# Install brew if not already installed
+# Install Homebrew if not already installed
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 # Update Homebrew
