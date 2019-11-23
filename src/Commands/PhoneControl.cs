@@ -45,7 +45,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
             var realDevices = await GetDevices();
@@ -300,7 +300,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
             var managerFolder = Path.GetDirectoryName(_dep.Config.SQLiteFilePath);
@@ -330,7 +330,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
             var output = Shell.Execute("killall", processName, out var exitCode);
@@ -350,7 +350,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
-            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
             var dict = new Dictionary<string, string>();
