@@ -365,7 +365,7 @@
                     continue;
                 }
                 var uuid = realDevices[name];
-                var args = $"-u {uuid} | grep \"ProductVersion:\"";
+                var args = $"-u {uuid} -k ProductVersion";
                 var output = Shell.Execute("ideviceinfo", args, out var exitCode);
                 if (exitCode != 0)
                 {
