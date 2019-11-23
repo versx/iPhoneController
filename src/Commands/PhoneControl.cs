@@ -84,7 +84,7 @@
             //TODO: Check if idevicediagnostics is installed.
 
             var realDevices = await GetDevices();
-            var devices = phoneNames.Split(',');
+            var devices = phoneNames.Replace(", ", ",").Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
@@ -118,7 +118,7 @@
             //TODO: Check if idevicescreenshot is installed.
 
             var realDevices = await GetDevices();
-            var devices = phoneNames.Split(',');
+            var devices = phoneNames.Replace(", ", ",").Split(',');
             var devicesFailed = new Dictionary<string, string>();
             for (var i = 0; i < devices.Length; i++)
             {
@@ -174,7 +174,7 @@
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
             var realDevices = await GetDevices();
-            var devices = phoneNames.Split(',');
+            var devices = phoneNames.Replace(", ", ",").Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
@@ -206,7 +206,7 @@
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
 
             var realDevices = await GetDevices();
-            var devices = phoneNames.Split(',');
+            var devices = phoneNames.Replace(", ", ",").Split(',');
             for (var i = 0; i < devices.Length; i++)
             {
                 var name = devices[i];
