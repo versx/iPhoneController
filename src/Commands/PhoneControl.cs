@@ -391,7 +391,7 @@
             var eb = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Blurple,
-                Title = $"**{Environment.MachineName}** Device iOS Versions",
+                Title = $"**{Environment.MachineName}** Device iOS Versions ({realDevices.Count.ToString("N0")})",
                 Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("\n", null)}"))
             };
             await ctx.RespondAsync(embed: eb);
