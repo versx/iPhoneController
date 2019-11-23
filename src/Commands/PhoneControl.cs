@@ -32,12 +32,15 @@
 
         #endregion
 
+        #region Information
+
         [
             Command("list"),
             Description("List all available devices.")
         ]
         public async Task ListDevicesAsync(CommandContext ctx,
-            [Description(""), RemainingText] string machineName = "")
+            [Description("Machine name to list devices from, otherwise leave blank."), RemainingText]
+            string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
@@ -65,40 +68,6 @@
                 Color = DiscordColor.Blurple
             };
             await ctx.RespondAsync(embed: eb);
-        }
-
-        [
-            Command("reboot"),
-            Description("Reboot specific device(s).")
-        ]
-        public async Task RebootAsync(CommandContext ctx,
-            [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames)
-        {
-            if (!HasRequiredRoles(ctx.Member))
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
-
-            //TODO: Check if idevicediagnostics is installed.
-
-            var realDevices = await GetDevices();
-            var devices = phoneNames.Replace(", ", ",").Split(',');
-            for (var i = 0; i < devices.Length; i++)
-            {
-                var name = devices[i];
-                if (!realDevices.ContainsKey(name))
-                {
-                    _logger.Warn($"{name} does not exist in device list, skipping reboot.");
-                    continue;
-                }
-
-                var uuid = realDevices[name];
-                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
-                var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                await ctx.RespondAsync(message);
-            }
         }
 
         [
@@ -158,6 +127,132 @@
                 await ctx.RespondAsync(embed: eb);
             }
         }
+
+        [
+            Command("iosver"),
+            Description("")
+        ]
+        public async Task IosVersionAsync(CommandContext ctx,
+            [Description("Machine name to list iOS device versions from, otherwise leave blank."), RemainingText]
+            string machineName = "")
+        {
+            if (!HasRequiredRoles(ctx.Member))
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
+                return;
+
+            var dict = new Dictionary<string, string>();
+            var realDevices = await GetDevices();
+            var keys = realDevices.Keys.ToList();
+            keys.Sort();
+
+            for (var i = 0; i < keys.Count; i++)
+            {
+                var name = keys[i];
+                if (!realDevices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
+                    continue;
+                }
+                var uuid = realDevices[name];
+                var args = $"-u {uuid} -k ProductVersion";
+                var output = Shell.Execute("ideviceinfo", args, out var exitCode);
+                if (exitCode != 0)
+                {
+                    _logger.Warn($"Failed to get device info from {name} ({uuid}).");
+                    continue;
+                }
+                if (dict.ContainsKey(name))
+                {
+                    _logger.Warn($"Duplicate device {name} ({uuid}).");
+                    continue;
+                }
+                dict.Add(name, output);
+            }
+
+            if (dict.Count == 0)
+            {
+                await ctx.RespondAsync($"Failed to get device info from any devices.");
+                return;
+            }
+
+            var eb = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Blurple,
+                Title = $"**{Environment.MachineName}** Device iOS Versions ({realDevices.Count.ToString("N0")})",
+                Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("\n", null)}"))
+            };
+            await ctx.RespondAsync(embed: eb);
+        }
+
+        #endregion
+
+        #region Management
+
+        [
+            Command("reboot"),
+            Description("Reboot specific device(s).")
+        ]
+        public async Task RebootAsync(CommandContext ctx,
+            [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
+            string phoneNames)
+        {
+            if (!HasRequiredRoles(ctx.Member))
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            //TODO: Check if idevicediagnostics is installed.
+
+            var realDevices = await GetDevices();
+            var devices = phoneNames.Replace(", ", ",").Split(',');
+            for (var i = 0; i < devices.Length; i++)
+            {
+                var name = devices[i];
+                if (!realDevices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping reboot.");
+                    continue;
+                }
+
+                var uuid = realDevices[name];
+                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
+                var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
+                await ctx.RespondAsync(message);
+            }
+        }
+
+        [
+            Command("kill"),
+            Description("Kill a specific running process.")
+        ]
+        public async Task KillAsync(CommandContext ctx,
+            [Description("Process name to attempt to kill."), RemainingText]
+            string processName,
+            [Description("Machine name to kill the process on, otherwise leave blank."), RemainingText]
+            string machineName = "")
+        {
+            if (!HasRequiredRoles(ctx.Member))
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
+                return;
+
+            var output = Shell.Execute("killall", processName, out var exitCode);
+            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : output);
+        }
+
+        #endregion
+
+        #region Remove Apps
 
         [
             Command("rm-uic"),
@@ -223,12 +318,16 @@
             }
         }
 
+        #endregion
+
+        #region Logs
+
         [
             Command("log-full"),
-            Description("")
+            Description("Display the latest full log of a specific device.")
         ]
         public async Task FullLogAsync(CommandContext ctx,
-            [Description(""), RemainingText]
+            [Description("iPhone name"), RemainingText]
             string phoneName)
         {
             if (!HasRequiredRoles(ctx.Member))
@@ -257,10 +356,10 @@
 
         [
             Command("log-debug"),
-            Description("")
+            Description("Display the latest debug log of a specific device.")
         ]
         public async Task DebugLogAsync(CommandContext ctx,
-            [Description(""), RemainingText]
+            [Description("iPhone name"), RemainingText]
             string phoneName)
         {
             if (!HasRequiredRoles(ctx.Member))
@@ -289,10 +388,11 @@
 
         [
             Command("log-clear"),
-            Description("")
+            Description("Delete all old logs in the `Logs` folder of the UI-Controller Manager.")
         ]
         public async Task ClearLogsAsync(CommandContext ctx,
-            [Description(""), RemainingText] string machineName = "")
+            [Description("Machine name to delete the old logs from, otherwise leave blank."), RemainingText]
+            string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
@@ -316,86 +416,7 @@
             await ctx.RespondAsync($"All log files deleted for {Environment.MachineName} (took {sw.Elapsed}).");
         }
 
-        [
-            Command("kill"),
-            Description("")
-        ]
-        public async Task KillAsync(CommandContext ctx,
-            [Description(""), RemainingText] string processName,
-            [Description(""), RemainingText] string machineName = "")
-        {
-            if (!HasRequiredRoles(ctx.Member))
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
-
-            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
-                return;
-
-            var output = Shell.Execute("killall", processName, out var exitCode);
-            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : output);
-        }
-
-        [
-            Command("iosver"),
-            Description("")
-        ]
-        public async Task IosVersionAsync(CommandContext ctx,
-            [Description(""), RemainingText] string machineName = "")
-        {
-            if (!HasRequiredRoles(ctx.Member))
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
-
-            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
-                return;
-
-            var dict = new Dictionary<string, string>();
-            var realDevices = await GetDevices();
-            var keys = realDevices.Keys.ToList();
-            keys.Sort();
-
-            for (var i = 0; i < keys.Count; i++)
-            {
-                var name = keys[i];
-                if (!realDevices.ContainsKey(name))
-                {
-                    _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
-                    continue;
-                }
-                var uuid = realDevices[name];
-                var args = $"-u {uuid} -k ProductVersion";
-                var output = Shell.Execute("ideviceinfo", args, out var exitCode);
-                if (exitCode != 0)
-                {
-                    _logger.Warn($"Failed to get device info from {name} ({uuid}).");
-                    continue;
-                }
-                if (dict.ContainsKey(name))
-                {
-                    _logger.Warn($"Duplicate device {name} ({uuid}).");
-                    continue;
-                }
-                dict.Add(name, output);
-            }
-
-            if (dict.Count == 0)
-            {
-                await ctx.RespondAsync($"Failed to get device info from any devices.");
-                return;
-            }
-
-            var eb = new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Blurple,
-                Title = $"**{Environment.MachineName}** Device iOS Versions ({realDevices.Count.ToString("N0")})",
-                Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("\n", null)}"))
-            };
-            await ctx.RespondAsync(embed: eb);
-        }
+        #endregion
 
         #region Private Methods
 
