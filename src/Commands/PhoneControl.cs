@@ -140,7 +140,7 @@
                 if (exitCode == 0)
                 {
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                    await ctx.RespondWithFileAsync(fileName);
+                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({uuid})");
                     continue;
                 }
 
@@ -291,8 +291,18 @@
             Command("log-clear"),
             Description("")
         ]
-        public async Task ClearLogsAsync(CommandContext ctx)
+        public async Task ClearLogsAsync(CommandContext ctx,
+            [Description(""), RemainingText] string machineName = "")
         {
+            if (!HasRequiredRoles(ctx.Member))
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+                return;
+
             var managerFolder = Path.GetDirectoryName(_dep.Config.SQLiteFilePath);
             var logsFolder = Path.Combine(managerFolder, "Logs");
             var logFiles = Directory.GetFiles(logsFolder, "*.log");
@@ -311,11 +321,73 @@
             Description("")
         ]
         public async Task KillAsync(CommandContext ctx,
-            [Description(""), RemainingText]
-            string processName)
+            [Description(""), RemainingText] string processName,
+            [Description(""), RemainingText] string machineName = "")
         {
+            if (!HasRequiredRoles(ctx.Member))
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+                return;
+
             var output = Shell.Execute("killall", processName, out var exitCode);
             await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : output);
+        }
+
+        [
+            Command("iosver"),
+            Description("")
+        ]
+        public async Task IosVersionAsync(CommandContext ctx,
+            [Description(""), RemainingText] string machineName = "")
+        {
+            if (!HasRequiredRoles(ctx.Member))
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+                return;
+
+            var dict = new Dictionary<string, string>();
+            var realDevices = await GetDevices();
+            var keys = realDevices.Keys.ToList();
+            for (var i = 0; i < keys.Count; i++)
+            {
+                var name = keys[i];
+                var uuid = realDevices[name];
+                var args = $"-u {uuid} | grep \"ProductVersion:\"";
+                var output = Shell.Execute("ideviceinfo", args, out var exitCode);
+                if (exitCode != 0)
+                {
+                    _logger.Warn($"Failed to get device info from {name} ({uuid}).");
+                    continue;
+                }
+                if (dict.ContainsKey(name))
+                {
+                    _logger.Warn($"Duplicate device {name} ({uuid}).");
+                    continue;
+                }
+                dict.Add(name, output);
+            }
+
+            if (dict.Count == 0)
+            {
+                await ctx.RespondAsync($"Failed to get device info from any devices.");
+                return;
+            }
+
+            var eb = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Blurple,
+                Title = $"**{Environment.MachineName}** Device iOS Versions",
+                Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("ProductVersion: ", null)}"))
+            };
+            await ctx.RespondAsync(embed: eb);
         }
 
         #region Private Methods
