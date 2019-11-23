@@ -356,6 +356,8 @@
             var dict = new Dictionary<string, string>();
             var realDevices = await GetDevices();
             var keys = realDevices.Keys.ToList();
+            keys.Sort();
+
             for (var i = 0; i < keys.Count; i++)
             {
                 var name = keys[i];
@@ -390,7 +392,7 @@
             {
                 Color = DiscordColor.Blurple,
                 Title = $"**{Environment.MachineName}** Device iOS Versions",
-                Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("ProductVersion: ", null)}"))
+                Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("\n", null)}"))
             };
             await ctx.RespondAsync(embed: eb);
         }
