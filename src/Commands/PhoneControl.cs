@@ -36,13 +36,17 @@
             Command("list"),
             Description("List all available devices.")
         ]
-        public async Task ListDevicesAsync(CommandContext ctx)
+        public async Task ListDevicesAsync(CommandContext ctx,
+            [Description(""), RemainingText] string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
 
             if (!IsValidChannel(ctx.Channel.Id))
                 await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+
+            if (!string.IsNullOrEmpty(machineName) && !(string.Compare(machineName, Environment.MachineName, true) == 0))
+                return;
 
             var realDevices = await GetDevices();
             var devices = realDevices.Keys.ToList();
