@@ -359,6 +359,11 @@
             for (var i = 0; i < keys.Count; i++)
             {
                 var name = keys[i];
+                if (!realDevices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
+                    continue;
+                }
                 var uuid = realDevices[name];
                 var args = $"-u {uuid} | grep \"ProductVersion:\"";
                 var output = Shell.Execute("ideviceinfo", args, out var exitCode);
