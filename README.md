@@ -2,20 +2,35 @@
 Reboot, grab a screenshot, view latest debug or full logs, remove Pokemon Go or UIC from multiple devices all from Discord.  
 
 ## Commands  
-- `list` - Retrieve a list of all available devices.  
-- `screen` - Take a screenshot of specific devices.  
-- `reboot` - Reboot specific devices.  
-- `rm-pogo` - Removes Pokemon Go from specific devices.  
-- `rm-uic` - Removes UIC from specific devices.  
-- `log-clear` - Delete all logs in the Logs folder.  
-- `log-full` - Retrieve the latest full log of a device.  
-- `log-debug` - Retrieve the latest debug log of a device.  
-- `kill` - Kill a specific process such as `usbmuxd`.  
+- `list [machine_name]`  
+  Retrieve a list of devices from all machines or a specific one.  
+- `iosver [machine_name]`  
+  Retrieve a list of iOS versions running on devices for all machines or a specific one.  
+- `screen iPhone1, iPhone2`  
+  Take a screenshot of specific devices.  
+- `reboot iPhone1,iPhone2`  
+  Reboot specific devices.  
+- `rm-pogo iPhone1,iPhone2`  
+  Removes Pokemon Go from specific devices.  
+- `rm-uic iPhone1, iPhone2`  
+  Removes UIC from specific devices.  
+- `log-clear [machine_name]`  
+  Delete all logs in the Logs folder from all machines or a specific one.  
+- `log-full iPhone1`  
+  Retrieve the latest full log of a device.  
+- `log-debug iPhone1`  
+  Retrieve the latest debug log of a device.  
+- `kill usbmuxd [machine_name]`  
+  Kill a specific process such as `usbmuxd`.  
+
+**Notes:**  
+- *Parameters in brackets `[ ]` are optional*  
+- *When specifying device names, spaces between commas is supported. i.e `!reboot iPhone1, iPhone2`*  
 
 ## Installation  
 
 ### Prerequisites:  
-- idevicediagnostics  
+__idevicediagnostics__  
 1. `brew update`  
 2. `brew uninstall --ignore-dependencies libimobiledevice`  
 3. `brew uninstall --ignore-dependencies usbmuxd`  
@@ -29,13 +44,13 @@ Reboot, grab a screenshot, view latest debug or full logs, remove Pokemon Go or 
 11. `sudo chmod -R 777 /var/db/lockdown/`  
 
 
-**From the installation script:** (Just need to fill out config and run)  
+__iPhoneController__  
+**Installation script:** (Just need to fill out config and run)  
 ```
 wget https://raw.githubusercontent.com/versx/iPhoneController/sqlite/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
 ```
 
-**Manually:**
-- iPhoneController
+**Manually:**  
 1. `wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh && rm dotnet-install.sh`  
 2. `git clone https://github.com/versx/iPhoneController -b sqlite`  
 3. `cd iPhoneController`  

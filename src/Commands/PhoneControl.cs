@@ -43,10 +43,13 @@
             string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
@@ -79,10 +82,13 @@
             string phoneNames)
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             //TODO: Check if idevicescreenshot is installed.
 
@@ -137,10 +143,13 @@
             string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
@@ -202,10 +211,13 @@
             string phoneNames)
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             //TODO: Check if idevicediagnostics is installed.
 
@@ -238,10 +250,13 @@
             string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
@@ -263,10 +278,13 @@
             string phoneNames)
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             var realDevices = await GetDevices();
             var devices = phoneNames.Replace(", ", ",").Split(',');
@@ -295,10 +313,13 @@
             string phoneNames)
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             var realDevices = await GetDevices();
             var devices = phoneNames.Replace(", ", ",").Split(',');
@@ -331,10 +352,13 @@
             string phoneName)
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             var realDevices = await GetDevices();
             if (!realDevices.ContainsKey(phoneName))
@@ -363,10 +387,13 @@
             string phoneName)
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             var realDevices = await GetDevices();
             if (!realDevices.ContainsKey(phoneName))
@@ -395,10 +422,13 @@
             string machineName = "")
         {
             if (!HasRequiredRoles(ctx.Member))
+            {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
             if (!IsValidChannel(ctx.Channel.Id))
-                await ctx.RespondAsync($":warning: {ctx.User.Username} Invalid channel.");
+                return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
