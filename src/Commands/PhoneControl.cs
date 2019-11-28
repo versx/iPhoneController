@@ -472,7 +472,8 @@
 
         private bool IsValidChannel(ulong channelId)
         {
-            return _dep.Config.RequiredRoles.Count == 0 || _dep.Config.RequiredRoles.Contains(channelId);
+            //If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
+            return _dep.Config.ChannelId == 0 || _dep.Config.ChannelId == channelId;
         }
 
         private async Task<Dictionary<string, string>> GetDevices()
