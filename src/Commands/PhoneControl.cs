@@ -56,21 +56,38 @@
 
             var realDevices = await GetDevices();
             var devices = realDevices.Keys.ToList();
+            var deviceLists = new List<string>();
             var devicesString = string.Empty;
+            var maxDevicePerPage = 20;
             for (var i = 0; i < devices.Count; i++)
             {
                 var name = devices[i];
                 var uuid = realDevices[name];
                 devicesString += $"**{name}**: {uuid}\r\n";
+                if (i >= maxDevicePerPage)
+                {
+                    deviceLists.Add(devicesString);
+                    devicesString = string.Empty;
+                }
             }
 
-            var eb = new DiscordEmbedBuilder
+            if (devices.Count < maxDevicePerPage)
             {
-                Description = devicesString,
-                Title = $"{Environment.MachineName} Device List ({devices.Count.ToString("N0")})",
-                Color = DiscordColor.Blurple
-            };
-            await ctx.RespondAsync(embed: eb);
+                deviceLists.Add(devicesString);
+            }
+
+            for (var i = 0; i < deviceLists.Count; i++)
+            {
+                var msg = deviceLists[i];
+                var msgCount = deviceLists.Count > 1 ? $"Page: {i + 1}/{deviceLists.Count}" : string.Empty;
+                var eb = new DiscordEmbedBuilder
+                {
+                    Description = msg,
+                    Title = $"{Environment.MachineName} Device List ({devices.Count.ToString("N0")}) {msgCount}",
+                    Color = DiscordColor.Blurple
+                };
+                await ctx.RespondAsync(embed: eb);
+            }
         }
 
         [
