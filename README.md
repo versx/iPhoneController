@@ -26,6 +26,7 @@ Reboot, grab a screenshot, view latest debug or full logs, remove Pokemon Go or 
 **Notes:**  
 - *Parameters in brackets `[ ]` are optional*  
 - *When specifying device names, spaces between commas is supported. i.e `!reboot iPhone1, iPhone2`*  
+- *Best used with the same bot token if deploying to multiple machines. Devices not found will be skipped when executing commands.*  
 
 ## Installation  
 
