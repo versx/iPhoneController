@@ -1,5 +1,5 @@
 # iPhoneController  
-Reboot, grab a screenshot, view latest debug or full logs, remove Pokemon Go or UIC from multiple devices all from Discord.  
+Reboot, grab a screenshot, running iOS versions, view latest debug or full logs, kill specific running processes, clear logs folders, remove Pokemon Go or UIC from multiple devices all from Discord.  
 
 ## Commands  
 - `list [machine_name]`  
@@ -46,7 +46,7 @@ __idevicediagnostics__
 
 
 __iPhoneController__  
-**Installation script:** (Just need to fill out config and run)  
+**Installation script:** (Run the following commands, fill out config, skip to Running section)  
 ```
 wget https://raw.githubusercontent.com/versx/iPhoneController/sqlite/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
 ```
@@ -62,7 +62,16 @@ wget https://raw.githubusercontent.com/versx/iPhoneController/sqlite/install.sh 
 8. `~/.dotnet/dotnet iPhoneController.dll`  
 
 ## Updating  
-1. `git pull`  
+1. `git pull` (from root of folder)  
 2. `~/.dotnet/dotnet build`  
 3. `cd bin/Debug/netcoreapp2.1`  
 4. `~/.dotnet/dotnet iPhoneController.dll`  
+
+## Running  
+From the `bin/debug/netcoreapp2.1` folder type the following:  
+`~/.dotnet/dotnet iPhoneController.dll`  
+
+## TODO  
+- Add support for reinstalling UIC and Pokemon Go  
+- Localization  
+- 
