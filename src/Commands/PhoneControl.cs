@@ -54,36 +54,34 @@
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
-            var realDevices = await GetDevices();
-            var devices = realDevices.Keys.ToList();
-            var deviceLists = new List<string>();
-            var devicesString = string.Empty;
+            var devices = await GetDevices();
+            var keys = devices.Keys.ToList();
+            var pages = new List<string>();
             var maxDevicePerPage = 20;
-            for (var i = 0; i < devices.Count; i++)
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < keys.Count; i++)
             {
-                var name = devices[i];
-                var uuid = realDevices[name];
-                devicesString += $"**{name}**: {uuid}\r\n";
-                if (i >= maxDevicePerPage)
+                if (i % maxDevicePerPage == 0 && i != 0)
                 {
-                    deviceLists.Add(devicesString);
-                    devicesString = string.Empty;
+                    pages.Add(sb.ToString());
+                    sb.Clear();
                 }
+                var name = keys[i];
+                var uuid = devices[name];
+                sb.AppendLine($"**{name}**: {uuid}");
             }
-
-            if (devices.Count < maxDevicePerPage)
+            if (sb.Length > 0)
             {
-                deviceLists.Add(devicesString);
+                pages.Add(sb.ToString());
             }
-
-            for (var i = 0; i < deviceLists.Count; i++)
+            for (var i = 0; i < pages.Count; i++)
             {
-                var msg = deviceLists[i];
-                var msgCount = deviceLists.Count > 1 ? $"Page: {i + 1}/{deviceLists.Count}" : string.Empty;
+                var msg = pages[i];
+                var count = pages.Count > 1 ? $"Page: {i + 1}/{pages.Count}" : string.Empty;
                 var eb = new DiscordEmbedBuilder
                 {
                     Description = msg,
-                    Title = $"{Environment.MachineName} Device List ({devices.Count.ToString("N0")}) {msgCount}",
+                    Title = $"{Environment.MachineName} Device List ({keys.Count.ToString("N0")}) {count}",
                     Color = DiscordColor.Blurple
                 };
                 await ctx.RespondAsync(embed: eb);
