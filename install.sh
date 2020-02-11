@@ -38,7 +38,7 @@ wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dot
 chmod +x dotnet-install.sh
 
 # Install .NET Core 2.1.0
-./dotnet-install.sh --runtime dotnet --version 2.1.0
+./dotnet-install.sh --version 2.1.803
 
 # Delete .NET Core 2.1.0 installer
 rm dotnet-install.sh
