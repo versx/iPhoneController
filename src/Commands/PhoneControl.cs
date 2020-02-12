@@ -313,7 +313,7 @@
                 }
 
                 var uuid = realDevices[name];
-                var args = $"--id {uuid} --uninstall_only --bundle_id com.apple.test.RealDeviceMap-UIControlUITests-Runner";
+                var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.XCodeUITestsBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var exitCode);
                 await ctx.RespondAsync($"Removed UIC from {name}\r\nOutput: {output}");
             }
@@ -348,7 +348,7 @@
                 }
 
                 var uuid = realDevices[name];
-                var args = $"--id {uuid} --uninstall_only --bundle_id com.nianticlabs.pokemongo";
+                var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var exitCode);
                 await ctx.RespondAsync($"Removed Pokemon Go from {name}\r\nOutput: {output}");
             }

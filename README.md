@@ -44,6 +44,11 @@ __idevicediagnostics__
 10. `brew unlink ideviceinstaller && brew link ideviceinstaller`  
 11. `sudo chmod -R 777 /var/db/lockdown/`  
 
+__ios-deploy__  
+If you have previously installed ios-deploy via npm, uninstall it:  
+1. `sudo npm uninstall -g ios-deploy`  
+Install ios-deploy via Homebrew by running:  
+2. `brew install ios-deploy`  
 
 __iPhoneController__  
 **Installation script:** (Run the following commands, fill out config, skip to Running section)  
@@ -74,4 +79,4 @@ From the `bin/debug/netcoreapp2.1` folder type the following:
 ## TODO  
 - Add support for reinstalling UIC and Pokemon Go  
 - Localization  
-- 
+- Reinstall PoGo

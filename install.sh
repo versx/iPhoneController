@@ -4,6 +4,12 @@
 # Update Homebrew
 brew update
 
+# Uninstall ios-deploy from npm if already
+sudo npm uninstall -g ios-deploy
+
+# Install ios-deploy via Homebrew by running
+brew install ios-deploy
+
 # Uninstall libimobiledevice if already installed
 brew uninstall --ignore-dependencies libimobiledevice
 
