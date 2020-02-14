@@ -255,6 +255,43 @@
         }
 
         [
+            Command("shutdown"),
+            Description("Shutdown specific device(s).")
+        ]
+        public async Task ShutdownAsync(CommandContext ctx,
+            [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
+            string phoneNames)
+        {
+            if (!HasRequiredRoles(ctx.Member))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                return;
+
+            //TODO: Check if idevicediagnostics is installed.
+
+            var realDevices = await GetDevices();
+            var devices = phoneNames.Replace(", ", ",").Split(',');
+            for (var i = 0; i < devices.Length; i++)
+            {
+                var name = devices[i];
+                if (!realDevices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping shutdown.");
+                    continue;
+                }
+
+                var uuid = realDevices[name];
+                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} shutdown", out var exitCode);
+                var message = exitCode == 0 ? $"Shutting down device {name} ({uuid})" : output;
+                await ctx.RespondAsync(message);
+            }
+        }
+
+        [
             Command("kill"),
             Description("Kill a specific running process.")
         ]
