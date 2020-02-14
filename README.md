@@ -10,6 +10,8 @@ Reboot, grab a screenshot, running iOS versions, view latest debug or full logs,
   Take a screenshot of specific devices.  
 - `reboot iPhone1,iPhone2`  
   Reboot specific devices.  
+- `shutdown iPhone1,iPhone2`  
+  Shutdown specific devices.  
 - `rm-pogo iPhone1,iPhone2`  
   Removes Pokemon Go from specific devices.  
 - `rm-uic iPhone1, iPhone2`  
