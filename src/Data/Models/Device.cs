@@ -11,5 +11,8 @@
 
         [Column("name")]
         public string Name { get; set; }
+
+        [Column("enabled")]
+        public bool Enabled { get; set; }
     }
 }

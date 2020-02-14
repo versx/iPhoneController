@@ -11,6 +11,7 @@
     using DSharpPlus.Entities;
 
     using iPhoneController.Data;
+    using iPhoneController.Data.Models;
     using iPhoneController.Diagnostics;
     using iPhoneController.Utils;
 
@@ -67,8 +68,9 @@
                     sb.Clear();
                 }
                 var name = keys[i];
-                var uuid = devices[name];
-                sb.AppendLine($"**{name}**: {uuid}");
+                var device = devices[name];
+                // TODO: Add disabled indicator
+                sb.AppendLine($"**{name}**: {device.Uuid}");
             }
             if (sb.Length > 0)
             {
@@ -119,18 +121,22 @@
                     continue;
                 }
 
-                var uuid = realDevices[name];
-                var fileName = $"{uuid}.jpg";
+                var device = realDevices[name];
+                // TODO: Make config option to respect `Enabled` value.
+                if (!device.Enabled)
+                    continue;
+
+                var fileName = $"{device.Uuid}.jpg";
                 if (File.Exists(fileName))
                 {
                     File.Delete(fileName);
                 }
 
-                var output = Shell.Execute("idevicescreenshot", $"-u {uuid} {fileName}", out var exitCode);
+                var output = Shell.Execute("idevicescreenshot", $"-u {device.Uuid} {fileName}", out var exitCode);
                 if (exitCode == 0)
                 {
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({uuid})");
+                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({device.Uuid})");
                     continue;
                 }
 
@@ -182,17 +188,17 @@
                     _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
                     continue;
                 }
-                var uuid = realDevices[name];
-                var args = $"-u {uuid} -k ProductVersion";
+                var device = realDevices[name];
+                var args = $"-u {device.Uuid} -k ProductVersion";
                 var output = Shell.Execute("ideviceinfo", args, out var exitCode);
                 if (exitCode != 0)
                 {
-                    _logger.Warn($"Failed to get device info from {name} ({uuid}).");
+                    _logger.Warn($"Failed to get device info from {name} ({device.Uuid}).");
                     continue;
                 }
                 if (dict.ContainsKey(name))
                 {
-                    _logger.Warn($"Duplicate device {name} ({uuid}).");
+                    _logger.Warn($"Duplicate device {name} ({device.Uuid}).");
                     continue;
                 }
                 dict.Add(name, output);
@@ -247,9 +253,12 @@
                     continue;
                 }
 
-                var uuid = realDevices[name];
-                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
-                var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
+                var device = realDevices[name];
+                if (!device.Enabled)
+                    continue;
+
+                var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
+                var message = exitCode == 0 ? $"Restarting device {name} ({device.Uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -284,9 +293,12 @@
                     continue;
                 }
 
-                var uuid = realDevices[name];
-                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} shutdown", out var exitCode);
-                var message = exitCode == 0 ? $"Shutting down device {name} ({uuid})" : output;
+                var device = realDevices[name];
+                if (!device.Enabled)
+                    continue;
+
+                var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} shutdown", out var exitCode);
+                var message = exitCode == 0 ? $"Shutting down device {name} ({device.Uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -349,8 +361,11 @@
                     continue;
                 }
 
-                var uuid = realDevices[name];
-                var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.XCodeUITestsBundleIdentifier}";
+                var device = realDevices[name];
+                if (!device.Enabled)
+                    continue;
+
+                var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.XCodeUITestsBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var exitCode);
                 await ctx.RespondAsync($"Removed UIC from {name}\r\nOutput: {output}");
             }
@@ -384,8 +399,11 @@
                     continue;
                 }
 
-                var uuid = realDevices[name];
-                var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
+                var device = realDevices[name];
+                if (!device.Enabled)
+                    continue;
+
+                var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var exitCode);
                 await ctx.RespondAsync($"Removed Pokemon Go from {name}\r\nOutput: {output}");
             }
@@ -528,7 +546,7 @@
             return _dep.Config.ChannelId == 0 || _dep.Config.ChannelId == channelId;
         }
 
-        private async Task<Dictionary<string, string>> GetDevices()
+        private async Task<Dictionary<string, Device>> GetDevices()
         {
             var sqliteFilePath = _dep.Config.SQLiteFilePath;
             if (!File.Exists(sqliteFilePath))
@@ -549,7 +567,7 @@
                     return null;
                 }
 
-                return devices.ToDictionary(x => x.Name, y => y.Uuid);
+                return devices.ToDictionary(x => x.Name, y => y);
             }
         }
 
@@ -566,6 +584,7 @@
         #endregion
     }
 
+    /*
     public class PhoneManager
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_MGR");
@@ -589,4 +608,5 @@
             return string.Empty;
         }
     }
+    */
 }
