@@ -308,7 +308,7 @@
             Description("Kill a specific running process.")
         ]
         public async Task KillAsync(CommandContext ctx,
-            [Description("Process name to attempt to kill."), RemainingText]
+            [Description("Process name to attempt to kill.")]
             string processName,
             [Description("Machine name to kill the process on, otherwise leave blank."), RemainingText]
             string machineName = "")
