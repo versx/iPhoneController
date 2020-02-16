@@ -322,11 +322,13 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
+            // Machine name is not null and machine name does not match current machine name, skip.
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
+            // REVIEW: Possibly use managed Process class instead of relying on command line.
             var output = Shell.Execute("killall", processName, out var exitCode);
-            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : output);
+            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : $"Result: {output}");
         }
 
         #endregion

@@ -107,6 +107,7 @@
             _logger.Info($"[DISCORD] Id: {e.Client.CurrentUser.Id}");
             _logger.Info($"[DISCORD] Name: {e.Client.CurrentUser.Username}#{e.Client.CurrentUser.Discriminator}");
             _logger.Info($"[DISCORD] Email: {e.Client.CurrentUser.Email}");
+            _logger.Info($"Machine Name: {Environment.MachineName}");
 
             await Task.CompletedTask;
         }
