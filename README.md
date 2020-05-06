@@ -53,3 +53,6 @@ vi bin/debug/netcoreapp2.1/config.json
 - Add support for reinstalling UIC and Pokemon Go  
 - Localization  
 - Reinstall PoGo
+
+## Discord  
+https://discordapp.com/invite/zZ9h9Xa  
