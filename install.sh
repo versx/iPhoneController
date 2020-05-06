@@ -62,7 +62,7 @@ cd iPhoneController
 cp config.example.json bin/Debug/netcoreapp2.1/config.json
 
 # Change directory into build folder
-cd bin/Debug/netcoreapp2.1
+#cd bin/Debug/netcoreapp2.1
 
 # Start iPhoneController.dll
 #~/.dotnet/dotnet iPhoneController.dll
