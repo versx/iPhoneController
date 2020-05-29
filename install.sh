@@ -19,14 +19,14 @@ brew uninstall --ignore-dependencies usbmuxd
 # Install latest usbmux daemon
 brew install --HEAD usbmuxd
 
-# Recreate usbmux daemon link
-brew unlink usbmuxd && brew link usbmuxd
+# Unlink libplist
+brew unlink libplist
+
+# Install latest libplist
+brew install --HEAD libplist
 
 # Install latest libimobiledevice
 brew install --HEAD libimobiledevice
-
-# Recreate ilibmobiledevice link
-brew unlink libimobiledevice && brew link libimobiledevice
 
 # Install latest idevice installer
 brew install --HEAD ideviceinstaller
