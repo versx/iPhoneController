@@ -1,6 +1,7 @@
 ﻿namespace iPhoneController
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@
 
         public Bot(Config config)
         {
-            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelId={config.ChannelId}, Devices={config.SQLiteFilePath}]");
+            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelId={config.ChannelId}]");
             _config = config;
 
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>
@@ -92,6 +93,32 @@
             _logger.Info("Connecting to Discord...");
 
             _client.ConnectAsync();
+        }
+
+        public static Dictionary<string, string> GetDevices()
+        {
+            var devices = new Dictionary<string, string>();
+            var output = Utils.Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);
+            if (string.IsNullOrEmpty(output) || exitCode != 0)
+            {
+                // Failed
+                return devices;
+            }
+
+            var split = output.Split('\n');
+            foreach (var line in split)
+            {
+                if (!line.ToLower().Contains("found"))
+                    continue;
+
+                var name = line.GetBetween("Found ", " (");
+                var uuid = line.GetBetween("'", "'");
+                if (!devices.ContainsKey(name))
+                {
+                    devices.Add(name, uuid);
+                }
+            }
+            return devices;
         }
 
         #region Discord Events
@@ -171,7 +198,7 @@
             }
             else
             {
-                _logger.Error($"User {e.Context.User.Username} tried executing command {e.Command?.Name} and unknown error occurred.\r\n: {e.Exception.ToString()}");
+                _logger.Error($"User {e.Context.User.Username} tried executing command {e.Command?.Name} and unknown error occurred.\r\n: {e.Exception}");
             }
         }
 

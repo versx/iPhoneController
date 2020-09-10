@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <LangVersion>latest</LangVersion>
-    <OutputPath>..\bin\Debug</OutputPath>
+    <OutputPath>..\bin\debug</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <LangVersion>latest</LangVersion>
@@ -26,15 +26,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="DSharpPlus" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Diagnostics\" />
     <Folder Include="Configuration\" />
-    <Folder Include="Utils\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Commands\" />
-    <Folder Include="Data\" />
-    <Folder Include="Data\Models\" />
   </ItemGroup>
 </Project>

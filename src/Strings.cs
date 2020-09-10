@@ -6,7 +6,7 @@
 
         public const string ConfigFileName = "config.json";
 
-        public const string LogsFolder = "Logs";
+        public const string LogsFolder = "logs";
 
         public const string CrashMessage = "iPhoneController JUST CRASHED!";
 

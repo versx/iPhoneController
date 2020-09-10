@@ -14,14 +14,6 @@ Reboot, grab a screenshot, running iOS versions, view latest debug or full logs,
   Shutdown specific devices.  
 - `rm-pogo iPhone1,iPhone2`  
   Removes Pokemon Go from specific devices.  
-- `rm-uic iPhone1, iPhone2`  
-  Removes UIC from specific devices.  
-- `log-clear [machine_name]`  
-  Delete all logs in the Logs folder from all machines or a specific one.  
-- `log-full iPhone1`  
-  Retrieve the latest full log of a device.  
-- `log-debug iPhone1`  
-  Retrieve the latest debug log of a device.  
 - `kill usbmuxd [machine_name]`  
   Kill a specific process such as `usbmuxd`.  
 
@@ -55,12 +47,12 @@ Install ios-deploy via Homebrew by running:
 __iPhoneController__  
 **Installation script:** (Run the following commands, fill out config, skip to Running section)  
 ```
-wget https://raw.githubusercontent.com/versx/iPhoneController/sqlite/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
+wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
 ```
 
 **Manually:**  
 1. `wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh && rm dotnet-install.sh`  
-2. `git clone https://github.com/versx/iPhoneController -b sqlite`  
+2. `git clone https://github.com/versx/iPhoneController`  
 3. `cd iPhoneController`  
 4. `~/.dotnet/dotnet build`  
 5. `cp config.example.json bin/Debug/netcoreapp2.1/config.json`  

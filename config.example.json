@@ -4,6 +4,5 @@
   "ownerId": 0000000001,
   "channelId": 0000000001,
   "commandPrefix": "!",
-  "requiredRoles": [0000000001],
-  "sqliteFilePath": "/Users/test/UIC/Manager/db.sqlite"
+  "requiredRoles": [0000000001]
 }

@@ -32,9 +32,6 @@
         [JsonProperty("requiredRoles")]
         public List<ulong> RequiredRoles { get; set; }
 
-        [JsonProperty("sqliteFilePath")]
-        public string SQLiteFilePath { get; set; }
-
         #endregion
 
         #region Constructor
@@ -54,11 +51,6 @@
 
         public static Config Load(string filePath)
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException("Config not loaded because file not found.", filePath);
-            }
-
             return LoadInit<Config>(filePath, typeof(Config));
         }
 

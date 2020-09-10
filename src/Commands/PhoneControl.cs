@@ -10,12 +10,9 @@
     using DSharpPlus.CommandsNext.Attributes;
     using DSharpPlus.Entities;
 
-    using iPhoneController.Data;
-    using iPhoneController.Data.Models;
     using iPhoneController.Diagnostics;
+    using iPhoneController.Extensions;
     using iPhoneController.Utils;
-
-    using Microsoft.EntityFrameworkCore;
 
     //TODO: Restart all devices
 
@@ -55,8 +52,9 @@
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
-            var devices = await GetDevices();
+            var devices = GetDevices();
             var keys = devices.Keys.ToList();
+            /*
             var pages = new List<string>();
             var maxDevicePerPage = 20;
             var sb = new System.Text.StringBuilder();
@@ -76,6 +74,8 @@
             {
                 pages.Add(sb.ToString());
             }
+            */
+            var pages = SplitPages();
             for (var i = 0; i < pages.Count; i++)
             {
                 var msg = pages[i];
@@ -83,11 +83,37 @@
                 var eb = new DiscordEmbedBuilder
                 {
                     Description = msg,
-                    Title = $"{Environment.MachineName} Device List ({keys.Count.ToString("N0")}) {count}",
+                    Title = $"{Environment.MachineName} Device List ({keys.Count:N0}) {count}",
                     Color = DiscordColor.Blurple
                 };
                 await ctx.RespondAsync(embed: eb);
             }
+        }
+
+        private List<string> SplitPages()
+        {
+            var devices = GetDevices();
+            var keys = devices.Keys.ToList();
+            var pages = new List<string>();
+            var maxDevicePerPage = 20;
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (i % maxDevicePerPage == 0 && i != 0)
+                {
+                    pages.Add(sb.ToString());
+                    sb.Clear();
+                }
+                var name = keys[i];
+                var uuid = devices[name];
+                // TODO: Add disabled indicator
+                sb.AppendLine($"**{name}**: {uuid}");
+            }
+            if (sb.Length > 0)
+            {
+                pages.Add(sb.ToString());
+            }
+            return pages;
         }
 
         [
@@ -108,35 +134,30 @@
                 return;
 
             //TODO: Check if idevicescreenshot is installed.
-
-            var realDevices = await GetDevices();
-            var devices = phoneNames.Replace(", ", ",").Split(',');
+            var devices = GetDevices();
+            var rebootDevices = phoneNames.Replace(", ", ",").Split(',');
             var devicesFailed = new Dictionary<string, string>();
-            for (var i = 0; i < devices.Length; i++)
+            for (var i = 0; i < rebootDevices.Length; i++)
             {
-                var name = devices[i];
-                if (!realDevices.ContainsKey(name))
+                var name = rebootDevices[i];
+                if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping screenshot.");
                     continue;
                 }
 
-                var device = realDevices[name];
-                // TODO: Make config option to respect `Enabled` value.
-                if (!device.Enabled)
-                    continue;
-
-                var fileName = $"{device.Uuid}.jpg";
+                var uuid = devices[name];
+                var fileName = $"{uuid}.jpg";
                 if (File.Exists(fileName))
                 {
                     File.Delete(fileName);
                 }
 
-                var output = Shell.Execute("idevicescreenshot", $"-u {device.Uuid} {fileName}", out var exitCode);
+                var output = Shell.Execute("idevicescreenshot", $"-u {uuid} {fileName}", out var exitCode);
                 if (exitCode == 0)
                 {
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({device.Uuid})");
+                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({uuid})");
                     continue;
                 }
 
@@ -176,29 +197,29 @@
                 return;
 
             var dict = new Dictionary<string, string>();
-            var realDevices = await GetDevices();
-            var keys = realDevices.Keys.ToList();
+            var devices = GetDevices();
+            var keys = devices.Keys.ToList();
             keys.Sort();
 
             for (var i = 0; i < keys.Count; i++)
             {
                 var name = keys[i];
-                if (!realDevices.ContainsKey(name))
+                if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
                     continue;
                 }
-                var device = realDevices[name];
-                var args = $"-u {device.Uuid} -k ProductVersion";
+                var uuid = devices[name];
+                var args = $"-u {uuid} -k ProductVersion";
                 var output = Shell.Execute("ideviceinfo", args, out var exitCode);
                 if (exitCode != 0)
                 {
-                    _logger.Warn($"Failed to get device info from {name} ({device.Uuid}).");
+                    _logger.Warn($"Failed to get device info from {name} ({uuid}).");
                     continue;
                 }
                 if (dict.ContainsKey(name))
                 {
-                    _logger.Warn($"Duplicate device {name} ({device.Uuid}).");
+                    _logger.Warn($"Duplicate device {name} ({uuid}).");
                     continue;
                 }
                 dict.Add(name, output);
@@ -213,7 +234,7 @@
             var eb = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Blurple,
-                Title = $"**{Environment.MachineName}** Device iOS Versions ({realDevices.Count.ToString("N0")})",
+                Title = $"**{Environment.MachineName}** Device iOS Versions ({devices.Count:N0})",
                 Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("\n", null)}"))
             };
             await ctx.RespondAsync(embed: eb);
@@ -242,23 +263,20 @@
 
             //TODO: Check if idevicediagnostics is installed.
 
-            var realDevices = await GetDevices();
-            var devices = phoneNames.Replace(", ", ",").Split(',');
-            for (var i = 0; i < devices.Length; i++)
+            var devices = GetDevices();
+            var rebootDevices = phoneNames.Replace(", ", ",").Split(',');
+            for (var i = 0; i < rebootDevices.Length; i++)
             {
-                var name = devices[i];
-                if (!realDevices.ContainsKey(name))
+                var name = rebootDevices[i];
+                if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping reboot.");
                     continue;
                 }
 
-                var device = realDevices[name];
-                if (!device.Enabled)
-                    continue;
-
-                var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
-                var message = exitCode == 0 ? $"Restarting device {name} ({device.Uuid})" : output;
+                var uuid = devices[name];
+                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
+                var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -281,24 +299,20 @@
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
-
-            var realDevices = await GetDevices();
-            var devices = phoneNames.Replace(", ", ",").Split(',');
-            for (var i = 0; i < devices.Length; i++)
+            var devices = GetDevices();
+            var shutdownDevices = phoneNames.Replace(", ", ",").Split(',');
+            for (var i = 0; i < shutdownDevices.Length; i++)
             {
-                var name = devices[i];
-                if (!realDevices.ContainsKey(name))
+                var name = shutdownDevices[i];
+                if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping shutdown.");
                     continue;
                 }
 
-                var device = realDevices[name];
-                if (!device.Enabled)
-                    continue;
-
-                var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} shutdown", out var exitCode);
-                var message = exitCode == 0 ? $"Shutting down device {name} ({device.Uuid})" : output;
+                var uuid = devices[name];
+                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} shutdown", out var exitCode);
+                var message = exitCode == 0 ? $"Shutting down device {name} ({uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -328,50 +342,12 @@
 
             // REVIEW: Possibly use managed Process class instead of relying on command line.
             var output = Shell.Execute("killall", processName, out var exitCode);
-            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : $"Result: {output}");
+            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : $"{Environment.MachineName} Result: {output}");
         }
 
         #endregion
 
         #region Remove Apps
-
-        [
-            Command("rm-uic"),
-            Description("Remove UI-Controller from device(s).")
-        ]
-        public async Task RemoveUICAsync(CommandContext ctx,
-            [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames)
-        {
-            if (!HasRequiredRoles(ctx.Member))
-            {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-                return;
-            }
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                return;
-
-            var realDevices = await GetDevices();
-            var devices = phoneNames.Replace(", ", ",").Split(',');
-            for (var i = 0; i < devices.Length; i++)
-            {
-                var name = devices[i];
-                if (!realDevices.ContainsKey(name))
-                {
-                    _logger.Warn($"{name} does not exist in device list, skipping remove uic.");
-                    continue;
-                }
-
-                var device = realDevices[name];
-                if (!device.Enabled)
-                    continue;
-
-                var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.XCodeUITestsBundleIdentifier}";
-                var output = Shell.Execute("ios-deploy", args, out var exitCode);
-                await ctx.RespondAsync($"Removed UIC from {name}\r\nOutput: {output}");
-            }
-        }
 
         [
             Command("rm-pogo"),
@@ -390,132 +366,22 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            var realDevices = await GetDevices();
-            var devices = phoneNames.Replace(", ", ",").Split(',');
-            for (var i = 0; i < devices.Length; i++)
+            var devices = GetDevices();
+            var removeAppDevices = phoneNames.Replace(", ", ",").Split(',');
+            for (var i = 0; i < removeAppDevices.Length; i++)
             {
-                var name = devices[i];
-                if (!realDevices.ContainsKey(name))
+                var name = removeAppDevices[i];
+                if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping remove pogo.");
                     continue;
                 }
 
-                var device = realDevices[name];
-                if (!device.Enabled)
-                    continue;
-
-                var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
+                var uuid = devices[name];
+                var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var exitCode);
                 await ctx.RespondAsync($"Removed Pokemon Go from {name}\r\nOutput: {output}");
             }
-        }
-
-        #endregion
-
-        #region Logs
-
-        [
-            Command("log-full"),
-            Description("Display the latest full log of a specific device.")
-        ]
-        public async Task FullLogAsync(CommandContext ctx,
-            [Description("iPhone name"), RemainingText]
-            string phoneName)
-        {
-            if (!HasRequiredRoles(ctx.Member))
-            {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-                return;
-            }
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                return;
-
-            var realDevices = await GetDevices();
-            if (!realDevices.ContainsKey(phoneName))
-            {
-                _logger.Warn($"{phoneName} does not exist in device list, skipping full log.");
-                return;
-            }
-
-            var output = GetLatestLog(phoneName, true);
-            output = string.IsNullOrEmpty(output) ? $"Failed to get latest full log for device {phoneName}." : output;
-            if (File.Exists(output))
-                output = File.ReadAllText(output);
-
-            if (output.Length > 1500)
-                output = output.Substring(output.Length - 1494, 1494);
-
-            await ctx.RespondAsync($"```{output}```");
-        }
-
-        [
-            Command("log-debug"),
-            Description("Display the latest debug log of a specific device.")
-        ]
-        public async Task DebugLogAsync(CommandContext ctx,
-            [Description("iPhone name"), RemainingText]
-            string phoneName)
-        {
-            if (!HasRequiredRoles(ctx.Member))
-            {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-                return;
-            }
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                return;
-
-            var realDevices = await GetDevices();
-            if (!realDevices.ContainsKey(phoneName))
-            {
-                _logger.Warn($"{phoneName} does not exist in device list, skipping full log.");
-                return;
-            }
-
-            var output = GetLatestLog(phoneName, false);
-            output = string.IsNullOrEmpty(output) ? $"Failed to get latest debug log for device {phoneName}." : output;
-            if (File.Exists(output))
-                output = File.ReadAllText(output);
-
-            if (output.Length > 1500)
-                output = output.Substring(output.Length - 1494, 1494);
-
-            await ctx.RespondAsync($"```{output}```");
-        }
-
-        [
-            Command("log-clear"),
-            Description("Delete all old logs in the `Logs` folder of the UI-Controller Manager.")
-        ]
-        public async Task ClearLogsAsync(CommandContext ctx,
-            [Description("Machine name to delete the old logs from, otherwise leave blank."), RemainingText]
-            string machineName = "")
-        {
-            if (!HasRequiredRoles(ctx.Member))
-            {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-                return;
-            }
-
-            if (!IsValidChannel(ctx.Channel.Id))
-                return;
-
-            if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
-                return;
-
-            var managerFolder = Path.GetDirectoryName(_dep.Config.SQLiteFilePath);
-            var logsFolder = Path.Combine(managerFolder, "Logs");
-            var logFiles = Directory.GetFiles(logsFolder, "*.log");
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            for (var i = 0; i < logFiles.Length; i++)
-            {
-                File.Delete(logFiles[i]);
-            }
-            sw.Stop();
-            await ctx.RespondAsync($"All log files deleted for {Environment.MachineName} (took {sw.Elapsed}).");
         }
 
         #endregion
@@ -548,67 +414,32 @@
             return _dep.Config.ChannelId == 0 || _dep.Config.ChannelId == channelId;
         }
 
-        private async Task<Dictionary<string, Device>> GetDevices()
+        private Dictionary<string, string> GetDevices()
         {
-            var sqliteFilePath = _dep.Config.SQLiteFilePath;
-            if (!File.Exists(sqliteFilePath))
+            var devices = new Dictionary<string, string>();
+            var output = Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);
+            if (string.IsNullOrEmpty(output))// || exitCode != 0)
             {
-                _logger.Warn($"Failed to get device list, {sqliteFilePath} does not exist.");
-                return null;
+                // Failed
+                return devices;
             }
 
-            using (var db = DbContextFactory.Create($"Data Source={sqliteFilePath};"))
+            var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in split)
             {
-                var devices = await db.Devices
-                    .Where(x => x.Uuid != "default")
-                    .ToListAsync();
+                if (!line.ToLower().Contains("found"))
+                    continue;
 
-                if (devices?.Count == 0)
+                var uuid = line.GetBetween("Found ", " (");
+                var name = line.GetBetween("'", "'");
+                if (!devices.ContainsKey(name))
                 {
-                    _logger.Warn($"No devices in sqlite database.");
-                    return null;
+                    devices.Add(name, uuid);
                 }
-
-                return devices.ToDictionary(x => x.Name, y => y);
             }
-        }
-
-        private string GetLatestLog(string deviceName, bool full)
-        {
-            var managerFolder = Path.GetDirectoryName(_dep.Config.SQLiteFilePath);
-            var logsFolder = Path.Combine(managerFolder, "Logs");
-            var logs = Directory.GetFiles(logsFolder, $"*{deviceName}{(full ? "*.full.log" : "*.debug.log")}");
-            var logFile = logs.FirstOrDefault(x =>
-                Math.Round(DateTime.Now.Subtract(File.GetLastWriteTime(x)).TotalMinutes) <= 60); //Log was within the last hour, TODO: Change to 1-5 minutes, maybe configurable?
-            return logFile;
+            return devices;
         }
 
         #endregion
     }
-
-    /*
-    public class PhoneManager
-    {
-        private static readonly IEventLogger _logger = EventLogger.GetLogger("PHONE_MGR");
-
-        private readonly Dictionary<string, string> _devices;
-
-        public IReadOnlyDictionary<string, string> Devices => _devices;
-
-        public PhoneManager()
-        {
-            _devices = new Dictionary<string, string>();
-        }
-
-        public bool RestartDevice(string name)
-        {
-            return true;
-        }
-
-        public string Screenshot(string name)
-        {
-            return string.Empty;
-        }
-    }
-    */
 }
