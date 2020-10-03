@@ -4,8 +4,5 @@
   "ownerId": 0000000001,
   "channelId": 0000000001,
   "commandPrefix": "!",
-  "requiredRoles": [0000000001],
-  "devices": {
-    "iPhone": "uuid"
-  }
+  "requiredRoles": [0000000001]
 }

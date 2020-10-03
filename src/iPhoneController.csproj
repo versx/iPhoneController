@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <LangVersion>latest</LangVersion>
-    <OutputPath>..\bin\Debug</OutputPath>
+    <OutputPath>..\bin\debug</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <LangVersion>latest</LangVersion>
@@ -30,8 +30,6 @@
   <ItemGroup>
     <Folder Include="Diagnostics\" />
     <Folder Include="Configuration\" />
-    <Folder Include="Utils\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Commands\" />
   </ItemGroup>
 </Project>

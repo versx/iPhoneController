@@ -1,6 +1,7 @@
 ﻿namespace iPhoneController
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@
 
         public Bot(Config config)
         {
-            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, Devices={config.Devices.Count}]");
+            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelId={config.ChannelId}]");
             _config = config;
 
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>
@@ -58,7 +59,6 @@
                 UseInternalLogHandler = true
             });
             _client.Ready += Client_Ready;
-            //_client.MessageCreated += Client_MessageCreated;
             _client.ClientErrored += Client_ClientErrored;
             _client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
 
@@ -95,6 +95,32 @@
             _client.ConnectAsync();
         }
 
+        public static Dictionary<string, string> GetDevices()
+        {
+            var devices = new Dictionary<string, string>();
+            var output = Utils.Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);
+            if (string.IsNullOrEmpty(output) || exitCode != 0)
+            {
+                // Failed
+                return devices;
+            }
+
+            var split = output.Split('\n');
+            foreach (var line in split)
+            {
+                if (!line.ToLower().Contains("found"))
+                    continue;
+
+                var name = line.GetBetween("Found ", " (");
+                var uuid = line.GetBetween("'", "'");
+                if (!devices.ContainsKey(name))
+                {
+                    devices.Add(name, uuid);
+                }
+            }
+            return devices;
+        }
+
         #region Discord Events
 
         private async Task Client_Ready(ReadyEventArgs e)
@@ -108,8 +134,8 @@
             _logger.Info($"[DISCORD] Id: {e.Client.CurrentUser.Id}");
             _logger.Info($"[DISCORD] Name: {e.Client.CurrentUser.Username}#{e.Client.CurrentUser.Discriminator}");
             _logger.Info($"[DISCORD] Email: {e.Client.CurrentUser.Email}");
+            _logger.Info($"Machine Name: {Environment.MachineName}");
 
-            //await CreateEmojis();
             await Task.CompletedTask;
         }
 
@@ -172,7 +198,7 @@
             }
             else
             {
-                _logger.Error($"User {e.Context.User.Username} tried executing command {e.Command?.Name} and unknown error occurred.\r\n: {e.Exception.ToString()}");
+                _logger.Error($"User {e.Context.User.Username} tried executing command {e.Command?.Name} and unknown error occurred.\r\n: {e.Exception}");
             }
         }
 

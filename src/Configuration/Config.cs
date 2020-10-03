@@ -32,16 +32,12 @@
         [JsonProperty("requiredRoles")]
         public List<ulong> RequiredRoles { get; set; }
 
-        [JsonProperty("devices")]
-        public Dictionary<string, string> Devices { get; set; }
-
         #endregion
 
         #region Constructor
 
         public Config()
         {
-            Devices = new Dictionary<string, string>();
             RequiredRoles = new List<ulong>();
         }
 
@@ -55,11 +51,6 @@
 
         public static Config Load(string filePath)
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException("Config not loaded because file not found.", filePath);
-            }
-
             return LoadInit<Config>(filePath, typeof(Config));
         }
 
