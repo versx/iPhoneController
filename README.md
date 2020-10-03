@@ -44,7 +44,7 @@ If you have previously installed ios-deploy via npm, uninstall it:
 Install ios-deploy via Homebrew by running:  
 2. `brew install ios-deploy`  
 
-__iPhoneController__  
+### iPhoneController  
 **Installation script:** (Run the following commands, fill out config, skip to Running section)  
 ```
 wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
