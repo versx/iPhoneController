@@ -71,6 +71,5 @@ From the `bin/debug/netcoreapp2.1` folder type the following:
 `~/.dotnet/dotnet iPhoneController.dll`  
 
 ## TODO  
-- Add support for reinstalling UIC and Pokemon Go  
 - Localization  
 - Reinstall PoGo
