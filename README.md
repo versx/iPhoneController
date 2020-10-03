@@ -1,5 +1,5 @@
 # iPhoneController  
-Reboot, grab a screenshot, running iOS versions, view latest debug or full logs, kill specific running processes, clear logs folders, remove Pokemon Go or UIC from multiple devices all from Discord.  
+Reboot, grab a screenshot, running iOS versions, kill specific running processes, or remove Pokemon Go from multiple devices all from Discord.  
 
 ## Commands  
 - `list [machine_name]`  
