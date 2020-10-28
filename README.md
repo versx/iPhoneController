@@ -51,7 +51,7 @@ wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh 
 ```
 
 **Manually:**  
-1. `wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh && rm dotnet-install.sh`  
+1. `wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh --version 2.1.803 && rm dotnet-install.sh`  
 2. `git clone https://github.com/versx/iPhoneController`  
 3. `cd iPhoneController`  
 4. `~/.dotnet/dotnet build`  
