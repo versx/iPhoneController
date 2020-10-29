@@ -414,7 +414,11 @@
             return _dep.Config.ChannelId == 0 || _dep.Config.ChannelId == channelId;
         }
 
-        private Dictionary<string, string> GetDevices()
+        #endregion
+
+        #region Static Methods
+
+        public static Dictionary<string, string> GetDevices()
         {
             var devices = new Dictionary<string, string>();
             var output = Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);

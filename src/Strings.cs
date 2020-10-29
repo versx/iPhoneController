@@ -13,5 +13,7 @@
         public const string PokemonGoBundleIdentifier = "com.nianticlabs.pokemongo";
 
         public const string XCodeUITestsBundleIdentifier = "com.apple.test.RealDeviceMap-UIControlUITests-Runner";
+
+        public const string DefaultResponseMessage = "iPhoneController running...";
     }
 }

@@ -14,6 +14,7 @@
     using iPhoneController.Configuration;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
+    using iPhoneController.Net;
 
     public class Bot
     {
@@ -22,6 +23,7 @@
         private readonly DiscordClient _client;
         private readonly CommandsNextModule _commands;
         private readonly Config _config;
+        private readonly HttpServer _server;
 
         public Bot(Config config)
         {
@@ -85,6 +87,7 @@
             _commands.CommandExecuted += Commands_CommandExecuted;
             _commands.CommandErrored += Commands_CommandErrored;
             _commands.RegisterCommands<PhoneControl>();
+            _server = new HttpServer(_config.Host, _config.Port);
         }
 
         public void Start()
@@ -93,6 +96,8 @@
             _logger.Info("Connecting to Discord...");
 
             _client.ConnectAsync();
+            _server.Start();
+
         }
 
         public static Dictionary<string, string> GetDevices()
@@ -149,7 +154,7 @@
         private async Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
             // let's log the name of the command and user
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, Strings.BotName, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+            e.Context.Client.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, Strings.BotName, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
 
             // since this method is not async, let's return
             // a completed task, so that no additional work
@@ -159,7 +164,7 @@
 
         private async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, Strings.BotName, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? e.Context.Message.Content}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+            e.Context.Client.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, Strings.BotName, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? e.Context.Message.Content}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
 
             // let's check if the error is a result of lack of required permissions
             if (e.Exception is DSharpPlus.CommandsNext.Exceptions.ChecksFailedException)
@@ -214,11 +219,11 @@
             ConsoleColor color;
             switch (e.Level)
             {
-                case LogLevel.Error: color = ConsoleColor.DarkRed; break;
-                case LogLevel.Warning: color = ConsoleColor.Yellow; break;
-                case LogLevel.Info: color = ConsoleColor.White; break;
-                case LogLevel.Critical: color = ConsoleColor.Red; break;
-                case LogLevel.Debug: default: color = ConsoleColor.DarkGray; break;
+                case DSharpPlus.LogLevel.Error: color = ConsoleColor.DarkRed; break;
+                case DSharpPlus.LogLevel.Warning: color = ConsoleColor.Yellow; break;
+                case DSharpPlus.LogLevel.Info: color = ConsoleColor.White; break;
+                case DSharpPlus.LogLevel.Critical: color = ConsoleColor.Red; break;
+                case DSharpPlus.LogLevel.Debug: default: color = ConsoleColor.DarkGray; break;
             }
 
             //Source
