@@ -368,23 +368,19 @@
                 return;
 
             var devices = GetDevices();
-            var deployAppDevices = phoneNames.Replace(", ", "").Split(",");
-            var list = new List<string>(phoneNames.Replace(", ", "").Split(","));
-            Parallel.ForEach(list, async x =>
+            var deployAppDevices = new List<string>(phoneNames.Replace(", ", "").Split(","));
+            Parallel.ForEach(deployAppDevices, async x =>
             {
-                for (var i = 0; i < deployAppDevices.Length; i++)
+                if (!devices.ContainsKey(x))
                 {
-                    var name = deployAppDevices[i];
-                    if (!devices.ContainsKey(name))
-                    {
-                        _logger.Warn($"{name} does not exist in device list, skipping deploy pogo.");
-                        continue;
-                    }
-
-                    var uuid = devices[name];
+                    _logger.Warn($"{x} does not exist in device list, skipping deploy pogo.");
+                }
+                else
+                {
+                    var uuid = devices[x];
                     var args = $"--id {uuid} --bundle {_dep.Config.PokemonGoAppPath}";
                     var output = Shell.Execute("ios-deploy", args, out var exitCode);
-                    await ctx.RespondAsync($"Deployed Pokemon Go to {name} ({uuid})\r\nOutput: {output}");
+                    await ctx.RespondAsync($"Deployed Pokemon Go to {x} ({uuid})\r\nOutput: {output}");
                 }
             });
         }
