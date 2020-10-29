@@ -1,7 +1,6 @@
 ﻿namespace iPhoneController
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -100,30 +99,13 @@
 
         }
 
-        public static Dictionary<string, string> GetDevices()
+        public void Stop()
         {
-            var devices = new Dictionary<string, string>();
-            var output = Utils.Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);
-            if (string.IsNullOrEmpty(output) || exitCode != 0)
-            {
-                // Failed
-                return devices;
-            }
+            _logger.Trace("Stop");
+            _logger.Info("Disconnecting Discord client...");
 
-            var split = output.Split('\n');
-            foreach (var line in split)
-            {
-                if (!line.ToLower().Contains("found"))
-                    continue;
-
-                var name = line.GetBetween("Found ", " (");
-                var uuid = line.GetBetween("'", "'");
-                if (!devices.ContainsKey(name))
-                {
-                    devices.Add(name, uuid);
-                }
-            }
-            return devices;
+            _client.DisconnectAsync();
+            _server.Stop();
         }
 
         #region Discord Events

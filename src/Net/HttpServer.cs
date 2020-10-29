@@ -9,7 +9,6 @@
     using Newtonsoft.Json;
 
     using iPhoneController.Diagnostics;
-    using iPhoneController.Commands;
     using iPhoneController.Utils;
 
     /// <summary>
@@ -192,7 +191,7 @@
 
         private void HandleRebootDeviceRequest(string deviceName)
         {
-            var devices = PhoneControl.GetDevices();
+            var devices = Devices.GetAll();
             if (!devices.ContainsKey(deviceName))
             {
                 _logger.Warn($"{deviceName} does not exist in device list, skipping reboot.");
