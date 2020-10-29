@@ -347,7 +347,42 @@
 
         #endregion
 
-        #region Remove Apps
+        #region App Management
+
+        [
+            Command("deploy"),
+            Description("Remove Pokemon Go application from device(s).")
+        ]
+        public async Task DeployPoGoAsync(CommandContext ctx,
+            [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
+            string phoneNames)
+        {
+            if (!HasRequiredRoles(ctx.Member))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                return;
+
+            var devices = GetDevices();
+            var deployAppDevices = phoneNames.Replace(", ", "").Split(",");
+            for (var i = 0; i < deployAppDevices.Length; i++)
+            {
+                var name = deployAppDevices[i];
+                if (!devices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping deploy pogo.");
+                    continue;
+                }
+
+                var uuid = devices[name];
+                var args = $"--id {uuid} --bundle {_dep.Config.PokemonGoAppPath}";
+                var output = Shell.Execute("ios-deploy", args, out var exitCode);
+                await ctx.RespondAsync($"Deployed Pokemon Go to {name} ({uuid})\r\nOutput: {output}");
+            }
+        }
 
         [
             Command("rm-pogo"),
