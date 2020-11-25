@@ -11,7 +11,6 @@
     using DSharpPlus.Entities;
 
     using iPhoneController.Diagnostics;
-    using iPhoneController.Extensions;
     using iPhoneController.Utils;
 
     //TODO: Restart all devices
@@ -52,7 +51,7 @@
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var keys = devices.Keys.ToList();
             /*
             var pages = new List<string>();
@@ -92,7 +91,7 @@
 
         private List<string> SplitPages()
         {
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var keys = devices.Keys.ToList();
             var pages = new List<string>();
             var maxDevicePerPage = 20;
@@ -134,7 +133,7 @@
                 return;
 
             //TODO: Check if idevicescreenshot is installed.
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var rebootDevices = phoneNames.Replace(", ", ",").Split(',');
             var devicesFailed = new Dictionary<string, string>();
             for (var i = 0; i < rebootDevices.Length; i++)
@@ -197,7 +196,7 @@
                 return;
 
             var dict = new Dictionary<string, string>();
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var keys = devices.Keys.ToList();
             keys.Sort();
 
@@ -263,7 +262,7 @@
 
             //TODO: Check if idevicediagnostics is installed.
 
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var rebootDevices = phoneNames.Replace(", ", ",").Split(',');
             for (var i = 0; i < rebootDevices.Length; i++)
             {
@@ -299,7 +298,7 @@
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var shutdownDevices = phoneNames.Replace(", ", ",").Split(',');
             for (var i = 0; i < shutdownDevices.Length; i++)
             {
@@ -366,7 +365,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var removeAppDevices = phoneNames.Replace(", ", ",").Split(',');
             for (var i = 0; i < removeAppDevices.Length; i++)
             {
@@ -412,32 +411,6 @@
         {
             //If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
             return _dep.Config.ChannelIds.Count == 0 || _dep.Config.ChannelIds.Contains(channelId);
-        }
-
-        private Dictionary<string, string> GetDevices()
-        {
-            var devices = new Dictionary<string, string>();
-            var output = Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);
-            if (string.IsNullOrEmpty(output))// || exitCode != 0)
-            {
-                // Failed
-                return devices;
-            }
-
-            var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var line in split)
-            {
-                if (!line.ToLower().Contains("found"))
-                    continue;
-
-                var uuid = line.GetBetween("Found ", " (");
-                var name = line.GetBetween("'", "'");
-                if (!devices.ContainsKey(name))
-                {
-                    devices.Add(name, uuid);
-                }
-            }
-            return devices;
         }
 
         #endregion
