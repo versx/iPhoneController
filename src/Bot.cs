@@ -26,7 +26,7 @@
 
         public Bot(Config config)
         {
-            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelId={config.ChannelId}]");
+            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelIds={string.Join(", ", config.ChannelIds)}]");
             _config = config;
 
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>

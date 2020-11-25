@@ -410,7 +410,7 @@
         private bool IsValidChannel(ulong channelId)
         {
             //If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
-            return _dep.Config.ChannelId == 0 || _dep.Config.ChannelId == channelId;
+            return _dep.Config.ChannelIds.Count == 0 || _dep.Config.ChannelIds.Contains(channelId);
         }
 
         #endregion
