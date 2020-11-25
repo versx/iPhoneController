@@ -14,6 +14,12 @@
 
         #region Properties
 
+        [JsonProperty("host")]
+        public string Host { get; set; }
+
+        [JsonProperty("port")]
+        public ushort Port { get; set; }
+
         [JsonProperty("guildId")]
         public ulong GuildId { get; set; }
 
@@ -38,6 +44,8 @@
 
         public Config()
         {
+            Host = "*";
+            Port = 6542;
             RequiredRoles = new List<ulong>();
         }
 

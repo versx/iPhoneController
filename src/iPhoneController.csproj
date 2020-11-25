@@ -28,7 +28,6 @@
     <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Diagnostics\" />
     <Folder Include="Configuration\" />
     <Folder Include="Commands\" />
   </ItemGroup>
