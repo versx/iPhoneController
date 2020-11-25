@@ -2,7 +2,7 @@
   "token": "",
   "guildId": 0000000001,
   "ownerId": 0000000001,
-  "channelId": 0000000001,
+  "channelIds": [0000000001],
   "commandPrefix": "!",
   "requiredRoles": [0000000001]
 }

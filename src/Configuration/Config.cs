@@ -20,8 +20,8 @@
         [JsonProperty("ownerId")]
         public ulong OwnerId { get; set; }
 
-        [JsonProperty("channelId")]
-        public ulong ChannelId { get; set; }
+        [JsonProperty("channelIds")]
+        public List<ulong> ChannelIds { get; set; }
 
         [JsonProperty("token")]
         public string Token { get; set; }
@@ -38,6 +38,7 @@
 
         public Config()
         {
+            ChannelIds = new List<ulong>();
             RequiredRoles = new List<ulong>();
         }
 
