@@ -9,6 +9,7 @@
     using Newtonsoft.Json;
 
     using iPhoneController.Diagnostics;
+    using iPhoneController.Models;
     using iPhoneController.Utils;
 
     /// <summary>
@@ -124,7 +125,7 @@
 
         #endregion
 
-        #region Data Parsing Methods
+        #region Request Handlers
 
         private void RequestHandler()
         {
@@ -146,8 +147,6 @@
                         switch (endpoint)
                         {
                             case "/":
-                                break;
-                            case "/reboot":
                                 if (string.Compare(method, "POST", true) == 0)
                                 {
                                     var obj = JsonConvert.DeserializeObject<WebhookPayload>(data);
@@ -155,6 +154,9 @@
                                     {
                                         case "restart":
                                             HandleRebootDeviceRequest(obj.Device);
+                                            break;
+                                        case "reopen":
+                                            HandleReopenGameRequest(obj.Device);
                                             break;
                                     }
                                 }
@@ -191,16 +193,32 @@
 
         private void HandleRebootDeviceRequest(string deviceName)
         {
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             if (!devices.ContainsKey(deviceName))
             {
                 _logger.Warn($"{deviceName} does not exist in device list, skipping reboot.");
                 return;
             }
 
-            var uuid = devices[deviceName];
-            var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
-            var message = exitCode == 0 ? $"Restarting device {deviceName} ({uuid})" : output;
+            var device = devices[deviceName];
+            var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
+            var message = exitCode == 0 ? $"Restarting device {device.Name} ({device.Uuid})" : output;
+            _logger.Info(message);
+        }
+
+        private void HandleReopenGameRequest(string deviceName)
+        {
+            var devices = Device.GetAll();
+            if (!devices.ContainsKey(deviceName))
+            {
+                _logger.Warn($"{deviceName} does not exist in device list, skipping reopen.");
+                return;
+            }
+
+            var device = devices[deviceName];
+            var url = $"http://{device.IPAddress}:8080/reopen";
+            var response = Get(url);
+            var message = string.IsNullOrEmpty(response) ? $"Reopening game for device {device.Name} ({device.Uuid})" : response;
             _logger.Info(message);
         }
 
@@ -256,6 +274,23 @@
             Start();
 
             _logger.Debug("Disconnect handled.");
+        }
+
+        private string Get(string url)
+        {
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.Proxy = null;
+                    return wc.DownloadString(url);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+            return null;
         }
 
         #endregion
