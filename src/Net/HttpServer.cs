@@ -193,6 +193,7 @@
 
         private void HandleRebootDeviceRequest(string deviceName)
         {
+            _logger.Info($"Handling restart request for device {deviceName}...");
             var devices = Device.GetAll();
             if (!devices.ContainsKey(deviceName))
             {
@@ -208,6 +209,7 @@
 
         private void HandleReopenGameRequest(string deviceName)
         {
+            _logger.Info($"Handling reopen request for device {deviceName}...");
             var devices = Device.GetAll();
             if (!devices.ContainsKey(deviceName))
             {
