@@ -14,13 +14,18 @@
     <DefineConstants>Linux</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <LangVersion>latest</LangVersion>
-    <OutputPath>..\bin\debug</OutputPath>
+    <OutputPath>..\bin</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <LangVersion>latest</LangVersion>
-    <OutputPath>..\bin\Release</OutputPath>
+    <OutputPath>..\bin</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />

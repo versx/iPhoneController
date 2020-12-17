@@ -82,6 +82,7 @@
             {
                 _logger.Info($"Starting...");
                 _server.Start();
+                _logger.Info($"Started");
             }
             catch (HttpListenerException ex)
             {
