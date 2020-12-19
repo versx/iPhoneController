@@ -1,11 +1,5 @@
 ﻿namespace iPhoneController
 {
-    using System;
-    using System.Diagnostics;
-
-    using iPhoneController.Configuration;
-    using iPhoneController.Diagnostics;
-
     class Program
     {
         static void Main(string[] args)
@@ -19,8 +13,8 @@
             //        Console.WriteLine("Built in Windows!"); 
             //#endif
 
-            var logger = EventLogger.GetLogger();
-            var config = Config.Load(Strings.ConfigFileName);
+            var logger = Diagnostics.EventLogger.GetLogger();
+            var config = Configuration.Config.Load(Strings.ConfigFileName);
             if (config == null)
             {
                 logger.Error($"Failed to load config {Strings.ConfigFileName}.");
@@ -30,7 +24,7 @@
             var bot = new Bot(config);
             bot.Start();
 
-            Process.GetCurrentProcess().WaitForExit();
+            System.Diagnostics.Process.GetCurrentProcess().WaitForExit();
         }
     }
 }
