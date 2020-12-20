@@ -4,13 +4,13 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     using DSharpPlus.CommandsNext;
     using DSharpPlus.CommandsNext.Attributes;
     using DSharpPlus.Entities;
 
+    using iPhoneController.Deployment;
     using iPhoneController.Diagnostics;
     using iPhoneController.Utils;
 
@@ -350,8 +350,34 @@
         #region App Management
 
         [
+            Command("resign"),
+            Description("Download IPA, resign, and deploy to device(s)."),
+        ]
+        public async Task ResignPoGoAsync(CommandContext ctx,
+            [Description("Mega download link")] string megaLink,
+            [Description("Version")] string version,
+            [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
+            string phoneNames = "*")
+        {
+            var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
+            {
+                ResignApp = true,
+            };
+            var result = deployer.Resign(megaLink, version ?? "1.32.0b1");
+            if (!result)
+            {
+                await ctx.RespondAsync($"Failed to resign IPA");
+                return;
+            }
+            await ctx.RespondAsync($"Resign complete, deploying...");
+            
+            deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
+            await ctx.RespondAsync($"Deploy complete");
+        }
+
+        [
             Command("deploy"),
-            Description("Remove Pokemon Go application from device(s).")
+            Description("Deploy Pokemon Go application to device(s).")
         ]
         public async Task DeployPoGoAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
@@ -366,7 +392,7 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            var devices = GetDevices();
+            var devices = Devices.GetAll();
             var deployAppDevices = new List<string>(phoneNames.Replace(", ", "").Split(","));
             Parallel.ForEach(deployAppDevices, async x =>
             {

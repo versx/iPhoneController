@@ -7,5 +7,7 @@
   "channelIds": [0000000001],
   "commandPrefix": "!",
   "requiredRoles": [0000000001],
-  "pogoAppPath": ""
+  "pogoAppPath": "",
+  "developer": "",
+  "provisioningProfile": ""
 }

@@ -44,6 +44,9 @@ If you have previously installed ios-deploy via npm, uninstall it:
 Install ios-deploy via Homebrew by running:  
 2. `brew install ios-deploy`  
 
+__MegaTools__  
+1. `brew install megatools`  
+
 ### iPhoneController  
 **Installation script:** (Run the following commands, fill out config, skip to Running section)  
 ```
