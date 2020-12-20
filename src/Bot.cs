@@ -13,6 +13,7 @@
     using iPhoneController.Configuration;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
+    using iPhoneController.Models;
     using iPhoneController.Net;
 
     public class Bot
@@ -94,6 +95,7 @@
             _logger.Trace("Start");
             _logger.Info("Connecting to Discord...");
 
+            // TODO: Fails on M1 while debugging
             _client.ConnectAsync();
             _server.Start();
 
