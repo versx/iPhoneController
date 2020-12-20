@@ -9,6 +9,7 @@
     using System.Threading.Tasks;
 
     using iPhoneController.Diagnostics;
+    using iPhoneController.Extensions;
     using iPhoneController.Utils;
 
     public class IpaDeployer
@@ -89,7 +90,7 @@
         public void Deploy(string ipaPath, string deviceNames = "*")
         {
             var devices = Devices.GetAll();
-            var deployAppDevices = new List<string>(deviceNames.Replace(", ", "").Split(","));
+            var deployAppDevices = new List<string>(deviceNames.RemoveSpaces());
             if (deviceNames == "*")
             {
                 deployAppDevices = devices.Keys.ToList();

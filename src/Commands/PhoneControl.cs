@@ -12,6 +12,7 @@
 
     using iPhoneController.Deployment;
     using iPhoneController.Diagnostics;
+    using iPhoneController.Extensions;
     using iPhoneController.Utils;
 
     //TODO: Restart all devices
@@ -135,7 +136,7 @@
 
             //TODO: Check if idevicescreenshot is installed.
             var devices = Devices.GetAll();
-            var rebootDevices = phoneNames.Replace(", ", ",").Split(',');
+            var rebootDevices = phoneNames.RemoveSpaces();
             var devicesFailed = new Dictionary<string, string>();
             for (var i = 0; i < rebootDevices.Length; i++)
             {
@@ -264,7 +265,7 @@
             //TODO: Check if idevicediagnostics is installed.
 
             var devices = Devices.GetAll();
-            var rebootDevices = phoneNames.Replace(", ", ",").Split(',');
+            var rebootDevices = phoneNames.RemoveSpaces();
             for (var i = 0; i < rebootDevices.Length; i++)
             {
                 var name = rebootDevices[i];
@@ -300,7 +301,7 @@
 
             //TODO: Check if idevicediagnostics is installed.
             var devices = Devices.GetAll();
-            var shutdownDevices = phoneNames.Replace(", ", ",").Split(',');
+            var shutdownDevices = phoneNames.RemoveSpaces();
             for (var i = 0; i < shutdownDevices.Length; i++)
             {
                 var name = shutdownDevices[i];
@@ -393,7 +394,7 @@
                 return;
 
             var devices = Devices.GetAll();
-            var deployAppDevices = new List<string>(phoneNames.Replace(", ", "").Split(","));
+            var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
             Parallel.ForEach(deployAppDevices, async x =>
             {
                 if (!devices.ContainsKey(x))
@@ -428,7 +429,7 @@
                 return;
 
             var devices = Devices.GetAll();
-            var removeAppDevices = phoneNames.Replace(", ", ",").Split(',');
+            var removeAppDevices = phoneNames.RemoveSpaces();
             for (var i = 0; i < removeAppDevices.Length; i++)
             {
                 var name = removeAppDevices[i];
