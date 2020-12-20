@@ -382,7 +382,7 @@
         ]
         public async Task DeployPoGoAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames)
+            string phoneNames = "*")
         {
             if (!HasRequiredRoles(ctx.Member))
             {
