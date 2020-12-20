@@ -70,8 +70,13 @@
             {
                 _logger.Warn("idevicesyslog not found on machine.");
             }
+            var megatools = Shell.CommandExists("megadl");
+            if (!megatools)
+            {
+                _logger.Warn("megadl not found on machine");
+            }
             // ping / killall
-            return iosDeploy || ideviceDiagnostics || ideviceScreenshot || ideviceInfo || ideviceSyslog;
+            return iosDeploy && ideviceDiagnostics && ideviceScreenshot && ideviceInfo && ideviceSyslog && megatools;
         }
     }
 }
