@@ -13,6 +13,7 @@
     using iPhoneController.Deployment;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
+    using iPhoneController.Models;
     using iPhoneController.Utils;
 
     //TODO: Restart all devices
@@ -53,7 +54,7 @@
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
             /*
             var pages = new List<string>();
@@ -93,7 +94,7 @@
 
         private List<string> SplitPages()
         {
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
             var pages = new List<string>();
             var maxDevicePerPage = 20;
@@ -106,7 +107,7 @@
                     sb.Clear();
                 }
                 var name = keys[i];
-                var uuid = devices[name];
+                var uuid = devices[name].Uuid;
                 // TODO: Add disabled indicator
                 sb.AppendLine($"**{name}**: {uuid}");
             }
@@ -135,19 +136,18 @@
                 return;
 
             //TODO: Check if idevicescreenshot is installed.
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var rebootDevices = phoneNames.RemoveSpaces();
             var devicesFailed = new Dictionary<string, string>();
-            for (var i = 0; i < rebootDevices.Length; i++)
+            foreach (var rebootDevice in rebootDevices)
             {
-                var name = rebootDevices[i];
-                if (!devices.ContainsKey(name))
+                if (!devices.ContainsKey(rebootDevice))
                 {
-                    _logger.Warn($"{name} does not exist in device list, skipping screenshot.");
+                    _logger.Warn($"{rebootDevice} does not exist in device list, skipping screenshot.");
                     continue;
                 }
 
-                var uuid = devices[name];
+                var uuid = devices[rebootDevice].Uuid;
                 var fileName = $"{uuid}.jpg";
                 if (File.Exists(fileName))
                 {
@@ -158,11 +158,11 @@
                 if (exitCode == 0)
                 {
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({uuid})");
+                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{rebootDevice}** ({uuid})");
                     continue;
                 }
 
-                devicesFailed.Add(name, output);
+                devicesFailed.Add(rebootDevice, output);
             }
 
             if (devicesFailed.Count > 0)
@@ -198,7 +198,7 @@
                 return;
 
             var dict = new Dictionary<string, string>();
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
             keys.Sort();
 
@@ -210,7 +210,7 @@
                     _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
                     continue;
                 }
-                var uuid = devices[name];
+                var uuid = devices[name].Uuid;
                 var args = $"-u {uuid} -k ProductVersion";
                 var output = Shell.Execute("ideviceinfo", args, out var exitCode);
                 if (exitCode != 0)
@@ -263,21 +263,19 @@
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
-
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var rebootDevices = phoneNames.RemoveSpaces();
-            for (var i = 0; i < rebootDevices.Length; i++)
+            foreach (var rebootDevice in rebootDevices)
             {
-                var name = rebootDevices[i];
-                if (!devices.ContainsKey(name))
+                if (!devices.ContainsKey(rebootDevice))
                 {
-                    _logger.Warn($"{name} does not exist in device list, skipping reboot.");
+                    _logger.Warn($"{rebootDevice} does not exist in device list, skipping reboot.");
                     continue;
                 }
 
-                var uuid = devices[name];
+                var uuid = devices[rebootDevice];
                 var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
-                var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
+                var message = exitCode == 0 ? $"Restarting device {rebootDevice} ({uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -300,20 +298,19 @@
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var shutdownDevices = phoneNames.RemoveSpaces();
-            for (var i = 0; i < shutdownDevices.Length; i++)
+            foreach (var shutdownDevice in shutdownDevices)
             {
-                var name = shutdownDevices[i];
-                if (!devices.ContainsKey(name))
+                if (!devices.ContainsKey(shutdownDevice))
                 {
-                    _logger.Warn($"{name} does not exist in device list, skipping shutdown.");
+                    _logger.Warn($"{shutdownDevice} does not exist in device list, skipping shutdown.");
                     continue;
                 }
 
-                var uuid = devices[name];
+                var uuid = devices[shutdownDevice];
                 var output = Shell.Execute("idevicediagnostics", $"-u {uuid} shutdown", out var exitCode);
-                var message = exitCode == 0 ? $"Shutting down device {name} ({uuid})" : output;
+                var message = exitCode == 0 ? $"Shutting down device {shutdownDevice} ({uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -428,21 +425,20 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var removeAppDevices = phoneNames.RemoveSpaces();
-            for (var i = 0; i < removeAppDevices.Length; i++)
+            foreach (var removeAppDevice in removeAppDevices)
             {
-                var name = removeAppDevices[i];
-                if (!devices.ContainsKey(name))
+                if (!devices.ContainsKey(removeAppDevice))
                 {
-                    _logger.Warn($"{name} does not exist in device list, skipping remove pogo.");
+                    _logger.Warn($"{removeAppDevice} does not exist in device list, skipping remove pogo.");
                     continue;
                 }
 
-                var uuid = devices[name];
+                var uuid = devices[removeAppDevice];
                 var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var exitCode);
-                await ctx.RespondAsync($"Removed Pokemon Go from {name}\r\nOutput: {output}");
+                await ctx.RespondAsync($"Removed Pokemon Go from {removeAppDevice}\r\nOutput: {output}");
             }
         }
 
