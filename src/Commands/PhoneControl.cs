@@ -13,9 +13,8 @@
     using iPhoneController.Deployment;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
+    using iPhoneController.Models;
     using iPhoneController.Utils;
-
-    //TODO: Restart all devices
 
     public class PhoneControl
     {
@@ -53,29 +52,8 @@
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
                 return;
 
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
-            /*
-            var pages = new List<string>();
-            var maxDevicePerPage = 20;
-            var sb = new System.Text.StringBuilder();
-            for (int i = 0; i < keys.Count; i++)
-            {
-                if (i % maxDevicePerPage == 0 && i != 0)
-                {
-                    pages.Add(sb.ToString());
-                    sb.Clear();
-                }
-                var name = keys[i];
-                var device = devices[name];
-                // TODO: Add disabled indicator
-                sb.AppendLine($"**{name}**: {device.Uuid}");
-            }
-            if (sb.Length > 0)
-            {
-                pages.Add(sb.ToString());
-            }
-            */
             var pages = SplitPages();
             for (var i = 0; i < pages.Count; i++)
             {
@@ -89,32 +67,6 @@
                 };
                 await ctx.RespondAsync(embed: eb);
             }
-        }
-
-        private List<string> SplitPages()
-        {
-            var devices = Devices.GetAll();
-            var keys = devices.Keys.ToList();
-            var pages = new List<string>();
-            var maxDevicePerPage = 20;
-            var sb = new System.Text.StringBuilder();
-            for (int i = 0; i < keys.Count; i++)
-            {
-                if (i % maxDevicePerPage == 0 && i != 0)
-                {
-                    pages.Add(sb.ToString());
-                    sb.Clear();
-                }
-                var name = keys[i];
-                var uuid = devices[name];
-                // TODO: Add disabled indicator
-                sb.AppendLine($"**{name}**: {uuid}");
-            }
-            if (sb.Length > 0)
-            {
-                pages.Add(sb.ToString());
-            }
-            return pages;
         }
 
         [
@@ -134,31 +86,38 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            //TODO: Check if idevicescreenshot is installed.
-            var devices = Devices.GetAll();
-            var rebootDevices = phoneNames.RemoveSpaces();
-            var devicesFailed = new Dictionary<string, string>();
-            for (var i = 0; i < rebootDevices.Length; i++)
+            if (!Shell.CommandExists("idevicescreenshot"))
             {
-                var name = rebootDevices[i];
+                await ctx.RespondAsync($"Cannot take screenshot, `idevicescreenshot` not installed.");
+                return;
+            }
+
+            var devices = Device.GetAll();
+            var rebootDevices = phoneNames.RemoveSpaces();
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                rebootDevices = devices.Keys.ToArray();
+
+            var devicesFailed = new Dictionary<string, string>();
+            foreach (var name in rebootDevices)
+            {
                 if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping screenshot.");
                     continue;
                 }
 
-                var uuid = devices[name];
-                var fileName = $"{uuid}.jpg";
+                var device = devices[name];
+                var fileName = $"{device.Uuid}.jpg";
                 if (File.Exists(fileName))
                 {
                     File.Delete(fileName);
                 }
 
-                var output = Shell.Execute("idevicescreenshot", $"-u {uuid} {fileName}", out var exitCode);
+                var output = Shell.Execute("idevicescreenshot", $"-u {device.Uuid} {fileName}", out var exitCode);
                 if (exitCode == 0)
                 {
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
-                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{name}** ({uuid})");
+                    await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{device.Name}** ({device.Uuid})");
                     continue;
                 }
 
@@ -198,7 +157,7 @@
                 return;
 
             var dict = new Dictionary<string, string>();
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
             keys.Sort();
 
@@ -210,17 +169,17 @@
                     _logger.Warn($"{name} does not exist in device list, skipping iOS version.");
                     continue;
                 }
-                var uuid = devices[name];
-                var args = $"-u {uuid} -k ProductVersion";
+                var device = devices[name];
+                var args = $"-u {device.Uuid} -k ProductVersion";
                 var output = Shell.Execute("ideviceinfo", args, out var exitCode);
                 if (exitCode != 0)
                 {
-                    _logger.Warn($"Failed to get device info from {name} ({uuid}).");
+                    _logger.Warn($"Failed to get device info from {device.Name} ({device.Uuid}).");
                     continue;
                 }
                 if (dict.ContainsKey(name))
                 {
-                    _logger.Warn($"Duplicate device {name} ({uuid}).");
+                    _logger.Warn($"Duplicate device {name} ({device.Uuid}).");
                     continue;
                 }
                 dict.Add(name, output);
@@ -246,6 +205,53 @@
         #region Management
 
         [
+            Command("reopen"),
+            Description("Reopen games for specific device(s).")
+        ]
+        public async Task ReopenAsync(CommandContext ctx,
+            [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
+            string phoneNames)
+        {
+            if (!HasRequiredRoles(ctx.Member))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                return;
+
+            var devices = Device.GetAll();
+            var reopenDevices = phoneNames.RemoveSpaces();
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                reopenDevices = devices.Keys.ToArray();
+            foreach (var name in reopenDevices)
+            {
+                if (!devices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping reboot.");
+                    continue;
+                }
+
+                var device = devices[name];
+                // Check if we have IP address for device
+                if (string.IsNullOrEmpty(device.IPAddress))
+                {
+                    await ctx.RespondAsync($"Failed to get IP address for device {device.Name} ({device.Uuid}) to restart game");
+                    continue;
+                }
+                // Send HTTP GET request to device IP address
+                var data = NetUtils.Get($"http://{device.IPAddress}:8080/restart");
+                await ctx.RespondAsync
+                (
+                    string.IsNullOrEmpty(data)
+                    ? $"Reopening game for device {device.Name} ({device.Uuid})"
+                    : $"Error response: {data}"
+                );
+            }
+        }
+
+        [
             Command("reboot"),
             Description("Reboot specific device(s).")
         ]
@@ -262,22 +268,27 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            //TODO: Check if idevicediagnostics is installed.
-
-            var devices = Devices.GetAll();
-            var rebootDevices = phoneNames.RemoveSpaces();
-            for (var i = 0; i < rebootDevices.Length; i++)
+            if (!Shell.CommandExists("idevicediagnostics"))
             {
-                var name = rebootDevices[i];
+                await ctx.RespondAsync($"Cannot reboot device, `idevicediagnostics` not installed.");
+                return;
+            }
+
+            var devices = Device.GetAll();
+            var rebootDevices = phoneNames.RemoveSpaces();
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                rebootDevices = devices.Keys.ToArray();
+            foreach (var name in rebootDevices)
+            {
                 if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping reboot.");
                     continue;
                 }
 
-                var uuid = devices[name];
-                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} restart", out var exitCode);
-                var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
+                var device = devices[name];
+                var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
+                var message = exitCode == 0 ? $"Restarting device {device.Name} ({device.Uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -300,20 +311,21 @@
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var shutdownDevices = phoneNames.RemoveSpaces();
-            for (var i = 0; i < shutdownDevices.Length; i++)
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                shutdownDevices = devices.Keys.ToArray();
+            foreach (var name in shutdownDevices)
             {
-                var name = shutdownDevices[i];
                 if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping shutdown.");
                     continue;
                 }
 
-                var uuid = devices[name];
-                var output = Shell.Execute("idevicediagnostics", $"-u {uuid} shutdown", out var exitCode);
-                var message = exitCode == 0 ? $"Shutting down device {name} ({uuid})" : output;
+                var device = devices[name];
+                var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} shutdown", out var exitCode);
+                var message = exitCode == 0 ? $"Shutting down device {device.Name} ({device.Uuid})" : output;
                 await ctx.RespondAsync(message);
             }
         }
@@ -360,6 +372,15 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = "*")
         {
+            if (!HasRequiredRoles(ctx.Member))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
+
+            if (!IsValidChannel(ctx.Channel.Id))
+                return;
+
             var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
             {
                 ResignApp = true,
@@ -371,7 +392,7 @@
                 return;
             }
             await ctx.RespondAsync($"Resign complete, deploying...");
-            
+
             deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
             await ctx.RespondAsync($"Deploy complete");
         }
@@ -393,20 +414,22 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
-            Parallel.ForEach(deployAppDevices, async x =>
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                deployAppDevices = devices.Keys.ToList();
+            Parallel.ForEach(deployAppDevices, async deviceName =>
             {
-                if (!devices.ContainsKey(x))
+                if (!devices.ContainsKey(deviceName))
                 {
-                    _logger.Warn($"{x} does not exist in device list, skipping deploy pogo.");
+                    _logger.Warn($"{deviceName} does not exist in device list, skipping deploy pogo.");
                 }
                 else
                 {
-                    var uuid = devices[x];
-                    var args = $"--id {uuid} --bundle {_dep.Config.PokemonGoAppPath}";
+                    var device = devices[deviceName];
+                    var args = $"--id {device.Uuid} --bundle {_dep.Config.PokemonGoAppPath}";
                     var output = Shell.Execute("ios-deploy", args, out var exitCode);
-                    await ctx.RespondAsync($"Deployed Pokemon Go to {x} ({uuid})\r\nOutput: {output}");
+                    await ctx.RespondAsync($"Deployed Pokemon Go to {device.Name} ({device.Uuid})\r\nOutput: {output}");
                 }
             });
         }
@@ -428,21 +451,22 @@
             if (!IsValidChannel(ctx.Channel.Id))
                 return;
 
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var removeAppDevices = phoneNames.RemoveSpaces();
-            for (var i = 0; i < removeAppDevices.Length; i++)
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                removeAppDevices = devices.Keys.ToArray();
+            foreach (var name in removeAppDevices)
             {
-                var name = removeAppDevices[i];
                 if (!devices.ContainsKey(name))
                 {
                     _logger.Warn($"{name} does not exist in device list, skipping remove pogo.");
                     continue;
                 }
 
-                var uuid = devices[name];
-                var args = $"--id {uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
-                var output = Shell.Execute("ios-deploy", args, out var exitCode);
-                await ctx.RespondAsync($"Removed Pokemon Go from {name}\r\nOutput: {output}");
+                var device = devices[name];
+                var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
+                var output = Shell.Execute("ios-deploy", args, out var _);
+                await ctx.RespondAsync($"Removed Pokemon Go from {device.Name}\r\nOutput: {output}");
             }
         }
 
@@ -460,20 +484,39 @@
             if (memberRoles == null)
                 return false;
 
-            for (var i = 0; i < requiredRoles.Count; i++)
-            {
-                var requiredRole = requiredRoles[i];
-                if (memberRoles.Contains(requiredRole))
-                    return true;
-            }
-
-            return false;
+            return requiredRoles.Any(x => memberRoles.Contains(x));
         }
 
         private bool IsValidChannel(ulong channelId)
         {
             //If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
             return _dep.Config.ChannelIds.Count == 0 || _dep.Config.ChannelIds.Contains(channelId);
+        }
+
+        private List<string> SplitPages()
+        {
+            var devices = Device.GetAll();
+            var keys = devices.Keys.ToList();
+            var pages = new List<string>();
+            var maxDevicePerPage = 20;
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (i % maxDevicePerPage == 0 && i != 0)
+                {
+                    pages.Add(sb.ToString());
+                    sb.Clear();
+                }
+                var name = keys[i];
+                var uuid = devices[name];
+                // TODO: Add disabled indicator
+                sb.AppendLine($"**{name}**: {uuid}");
+            }
+            if (sb.Length > 0)
+            {
+                pages.Add(sb.ToString());
+            }
+            return pages;
         }
 
         #endregion

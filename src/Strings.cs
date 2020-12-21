@@ -39,5 +39,7 @@
         public const string PlistBuddyPath = "/usr/libexec/PlistBuddy";
 
         public const string CodesignPath = "/usr/bin/codesign";
+
+        public const string All = "All";
     }
 }
