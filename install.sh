@@ -37,6 +37,9 @@ brew unlink ideviceinstaller && brew link ideviceinstaller
 # Allow Execute, Read, and Write permissions on lockdown folder
 sudo chmod -R 777 /var/db/lockdown/
 
+# Install megatools  
+brew install megatools  
+
 # Download .NET Core 2.1 installer
 wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh
 
