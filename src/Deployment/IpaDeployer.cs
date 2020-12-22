@@ -162,18 +162,18 @@
             File.Copy(provisioningProfilePath, $"{pogoDir}/embedded.mobileprovision", true);
 
             // Extra provisioning profile entitlements
-            _logger.Info($"Extracting entitlements from mobileprovisioning profile...");
+            _logger.Info($"Signing mobile provisioning profile...");
             var provisioningPath = Path.Combine(Path.GetDirectoryName(outDir), "provisioning.plist");
             var provisioningData = Shell.Execute("/usr/bin/security", $"cms -D -i {pogoDir}/embedded.mobileprovision", out var _);
             File.WriteAllText(provisioningPath, provisioningData);
 
+            _logger.Info($"Extracting entitlements from mobileprovisioning profile...");
             var entitlementsPath = Path.Combine(Path.GetDirectoryName(outDir), "entitlements.plist");
-            var entitlementsData = Shell.Execute(Strings.PlistBuddyPath, $"-x -c 'Print:Entitlements' {provisioningPath}", out var _);
+            var entitlementsData = Shell.Execute(Strings.PlistBuddyPath, $@"-x -c ""Print:Entitlements"" {provisioningPath}", out var _);
             File.WriteAllText(entitlementsPath, entitlementsData);
 
             // Get list of compenents for resigning
             _logger.Info($"Getting list of compenents for resigning with {_developer}");
-            //Shell.Execute("/usr/bin/find", $"-d {outDir} -name *.app -o -name *.appex -o -name *.framework -o -name *.dylib", out var componentsExitCode);
             var files = GetComponentFiles(outDir);
             foreach (var file in files)
             {
@@ -190,8 +190,8 @@
                 _logger.Info($"Copying custom config to payload folder.");
                 File.Copy(configPath, destinationConfigPath);
 
-                _logger.Info($"Signing custom config.json...");
-                Codesign(destinationConfigPath);
+                //_logger.Info($"Signing custom config.json...");
+                //Codesign(destinationConfigPath);
             }
             else
             {
@@ -221,6 +221,8 @@
             // Cleanup and remove temp folder
             _logger.Info($"Deleting temp folder {outDir}...");
             Directory.Delete(outDir, true);
+            File.Delete(provisioningPath);
+            File.Delete(entitlementsPath);
             _logger.Info($"Your ipa has been signed into {ipaPathSigned}");
             return true;
         }
@@ -236,7 +238,7 @@
             sb.Append(file);
 
             var result = Shell.Execute(Strings.CodesignPath, sb.ToString(), out var _);
-            _logger.Debug($"Codesign result for {file}: {result}");
+            //_logger.Debug($"Codesign result for {file}: {result}");
         }
 
         private bool DownloadFile(string megaLink, string destinationPath)

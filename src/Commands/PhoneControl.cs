@@ -386,7 +386,8 @@
             {
                 ResignApp = true,
             };
-            var result = deployer.Resign(megaLink, version ?? "1.32.0b1");
+            await ctx.RespondAsync("Starting resign...");
+            var result = deployer.Resign(megaLink, version);
             if (!result)
             {
                 await ctx.RespondAsync($"Failed to resign IPA");
