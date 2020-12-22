@@ -69,6 +69,13 @@ wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh 
 1. `nano config.json` / `vi config.json` (Fill out config)  
 1. `~/.dotnet/dotnet iPhoneController.dll`  
 
+## App Deployment  
+After building `iPhoneController` for the first time:  
+1. In your `bin` folder, create a `releases/jorg/config` folder  
+1. Copy your GC `config.json` to the new `releases/jorg/config` folder  
+1. In your `bin` folder, create a `profiles` folder  
+1. Copy your mobile provisioning profile to the new `profiles` folder  
+
 ## Updating  
 1. `git pull` (from root of folder)  
 1. `~/.dotnet/dotnet build`  
