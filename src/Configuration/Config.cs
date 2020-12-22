@@ -44,9 +44,6 @@
         [JsonProperty("provisioningProfile")]
         public string ProvisioningProfile { get; set; }
 
-        [JsonProperty("pogoAppPath")]
-        public string PokemonGoAppPath { get; set; }
-
         #endregion
 
         #region Constructor

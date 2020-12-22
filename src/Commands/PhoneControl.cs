@@ -422,7 +422,7 @@
             var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
             if (string.Compare(phoneNames, Strings.All, true) == 0)
                 deployAppDevices = devices.Keys.ToList();
-            var appPath = IpaDeployer.GetLatestAppPath() ?? _dep.Config.PokemonGoAppPath;
+            var appPath = IpaDeployer.GetLatestAppPath();
             if (string.IsNullOrEmpty(appPath))
             {
                 await ctx.RespondAsync($"No signed app found, make sure to run 'resign' command first.");
