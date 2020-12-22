@@ -373,14 +373,14 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
-            {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-                return;
-            }
+            //if (!HasRequiredRoles(ctx.Member))
+            //{
+            //    await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+            //    return;
+            //}
 
-            if (!IsValidChannel(ctx.Channel.Id))
-                return;
+            //if (!IsValidChannel(ctx.Channel.Id))
+            //    return;
 
             var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
             {
@@ -406,19 +406,29 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
-            {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-                return;
-            }
+            //if (!HasRequiredRoles(ctx.Member))
+            //{
+            //    await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+            //    return;
+            //}
 
-            if (!IsValidChannel(ctx.Channel.Id))
-                return;
+            //if (!IsValidChannel(ctx.Channel.Id))
+            //    return;
 
             var devices = Device.GetAll();
             var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
             if (string.Compare(phoneNames, Strings.All, true) == 0)
                 deployAppDevices = devices.Keys.ToList();
+            var appPath = IpaDeployer.GetLatestAppPath() ?? _dep.Config.PokemonGoAppPath;
+            if (string.IsNullOrEmpty(appPath))
+            {
+                await ctx.RespondAsync($"No signed app found, make sure to run 'resign' command first.");
+                return;
+            }
+
+            var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile);
+            _logger.Debug($"Using app {appPath} for deployment.");
+            //deployer.Deploy(appPath);
             Parallel.ForEach(deployAppDevices, async deviceName =>
             {
                 if (!devices.ContainsKey(deviceName))
@@ -428,8 +438,14 @@
                 else
                 {
                     var device = devices[deviceName];
-                    var args = $"--id {device.Uuid} --bundle {_dep.Config.PokemonGoAppPath}";
-                    var output = Shell.Execute("ios-deploy", args, out var exitCode);
+                    var args = $"--id {device.Uuid} --bundle {appPath}";
+                    _logger.Info($"Deploying to device {device.Name} ({device.Uuid})...");
+                    var output = Shell.Execute("ios-deploy", args, out var exitCode, true);
+                    _logger.Debug($"{device.Name} ({device.Uuid}) Deployment output: {output}");
+                    if (output.Length > 2000)
+                    {
+                        output = string.Join("", output.TakeLast(1900));
+                    }
                     await ctx.RespondAsync($"Deployed Pokemon Go to {device.Name} ({device.Uuid})\r\nOutput: {output}");
                 }
             });

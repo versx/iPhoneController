@@ -20,7 +20,7 @@
         private readonly string _provisioningProfile;
 
 
-        public string ReleasesFolder => Path.Combine
+        public static string ReleasesFolder => Path.Combine
         (
             Strings.ReleasesFolder,
             "jorg"
@@ -79,7 +79,7 @@
                 return true;
             }
 
-            var result = ResignIpa(releaseName, releaseNameSigned);
+            var result = InternalResignApp(releaseName, releaseNameSigned);
             if (!result)
             {
                 _logger.Error($"Unknown error occurred while resigning ipa file {releaseName}");
@@ -96,6 +96,7 @@
             {
                 deployAppDevices = devices.Keys.ToList();
             }
+            _logger.Info($"Deploying app {ipaPath} to {string.Join(", ", deployAppDevices)}");
             Parallel.ForEach(deployAppDevices, deviceName =>
             {
                 if (!devices.ContainsKey(deviceName))
@@ -104,17 +105,28 @@
                 }
                 else
                 {
-                    var uuid = devices[deviceName];
-                    var args = $"--id {uuid} --bundle {ipaPath}";
-                    var output = Shell.Execute("ios-deploy", args, out var exitCode);
-                    _logger.Info($"Deployed Pokemon Go to {deviceName} ({uuid})\r\nOutput: {output}");
+                    var device = devices[deviceName];
+                    var args = $"--id {device.Uuid} --bundle {ipaPath}";
+                    _logger.Info($"Deploying to device {device.Name} ({device.Uuid})...");
+                    var output = Shell.Execute("ios-deploy", args, out var exitCode, true);
+                    _logger.Info($"Deployed Pokemon Go to {device.Name} ({device.Uuid})\r\nOutput: {output}");
                     // TODO: OnDeployCompleted event
                 }
             });
         }
 
+        public static string GetLatestAppPath()
+        {
+            var files = Directory.GetFiles(ReleasesFolder, "*.ipa", SearchOption.TopDirectoryOnly)
+                                 .Where(x => x.ToLower().Contains("signed"))
+                                 .ToList();
+            // Sort descending
+            files.Sort((a, b) => b.CompareTo(a));
+            return files.FirstOrDefault();
+        }
 
-        private bool ResignIpa(string ipaPath, string ipaPathSigned)
+
+        private bool InternalResignApp(string ipaPath, string ipaPathSigned)
         {
             _logger.Info($"Beginning to resign {ipaPath}");
             var outDir = Path.Combine(Path.GetTempPath(), "app");
@@ -165,7 +177,8 @@
             var files = GetComponentFiles(outDir);
             foreach (var file in files)
             {
-                //Shell.Execute(Strings.CodeSignPath, $@"--continue -f -s ""{_developer}"" --entitlements {entitlementsPath} {file}", out var _);
+                _logger.Debug($"Signing component {file}...");
+                //Shell.Execute(Strings.CodesignPath, $@"--continue -f -s ""{_developer}"" --entitlements {entitlementsPath} {file}", out var _);
                 Codesign(file, true, entitlementsPath);
             }
 
@@ -173,8 +186,12 @@
             var configPath = Path.Combine(ReleasesFolder, "config/config.json");
             if (File.Exists(configPath))
             {
+                var destinationConfigPath = Path.Combine(pogoDir, "config.json");
                 _logger.Info($"Copying custom config to payload folder.");
-                File.Copy(configPath, Path.Combine(pogoDir, "config.json"));
+                File.Copy(configPath, destinationConfigPath);
+
+                _logger.Info($"Signing custom config.json...");
+                Codesign(destinationConfigPath);
             }
             else
             {
@@ -188,8 +205,8 @@
             foreach (var frameworkFile in frameworkFiles)
             {
                 _logger.Debug($"Signing framework {frameworkFile}");
-                //Shell.Execute(Strings.CodeSignPath, $@"-f -s ""{_developer}"" {frameworkFile}", out var _);
-                Codesign(frameworkFile, false);
+                //Shell.Execute(Strings.CodesignPath, $@"-f -s ""{_developer}"" {frameworkFile}", out var _);
+                Codesign(frameworkFile);
             }
 
             // Zip payload folder
@@ -212,10 +229,10 @@
         {
             var sb = new StringBuilder();
             if (isContinued) sb.Append("--continue ");
-            sb.Append("-f -s");
-            sb.Append($@"""{_developer}""");
+            sb.Append("-f -s ");
+            sb.Append($@"""{_developer}"" ");
             if (!string.IsNullOrEmpty(entitlementsPath))
-                sb.Append($"--entitlements {entitlementsPath}");
+                sb.Append($"--entitlements {entitlementsPath} ");
             sb.Append(file);
 
             var result = Shell.Execute(Strings.CodesignPath, sb.ToString(), out var _);
@@ -245,10 +262,10 @@
 
         private static List<string> GetComponentFiles(string path)
         {
-            var frameworkFiles = Directory.GetFiles(path, "*.framework", SearchOption.AllDirectories);
+            var frameworkFiles = Directory.GetDirectories(path, "*.framework", SearchOption.AllDirectories);
             var dylibFiles = Directory.GetFiles(path, "*.dylib", SearchOption.AllDirectories);
-            var appFiles = Directory.GetFiles(path, "*.app", SearchOption.AllDirectories);
-            var appexFiles = Directory.GetFiles(path, "*.appex", SearchOption.AllDirectories);
+            var appFiles = Directory.GetDirectories(path, "*.app", SearchOption.AllDirectories);
+            var appexFiles = Directory.GetDirectories(path, "*.appex", SearchOption.AllDirectories);
             var list = new List<string>();
             list.AddRange(frameworkFiles);
             list.AddRange(dylibFiles);
