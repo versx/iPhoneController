@@ -84,15 +84,15 @@
             {
                 _logger.Error($"Unknown error occurred while resigning ipa file {releaseName}");
             }
-            //Deploy(releaseNameSigned, "*");
+            //Deploy(releaseNameSigned, Strings.All);
             return result;
         }
 
-        public void Deploy(string ipaPath, string deviceNames = "*")
+        public void Deploy(string ipaPath, string deviceNames = Strings.All)
         {
             var devices = Device.GetAll();
             var deployAppDevices = new List<string>(deviceNames.RemoveSpaces());
-            if (deviceNames == "*")
+            if (string.Compare(deviceNames, Strings.All, true) == 0)
             {
                 deployAppDevices = devices.Keys.ToList();
             }

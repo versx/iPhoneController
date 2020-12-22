@@ -75,7 +75,7 @@
         ]
         public async Task ScreenshotAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames)
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
@@ -210,7 +210,7 @@
         ]
         public async Task ReopenAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames)
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
@@ -258,7 +258,7 @@
         ]
         public async Task RebootAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames)
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
@@ -300,7 +300,7 @@
         ]
         public async Task ShutdownAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames)
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
@@ -371,7 +371,7 @@
             [Description("Mega download link")] string megaLink,
             [Description("Version")] string version,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames = "*")
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
@@ -404,7 +404,7 @@
         ]
         public async Task DeployPoGoAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames = "*")
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
@@ -441,7 +441,7 @@
         ]
         public async Task RemovePoGoAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames)
+            string phoneNames = Strings.All)
         {
             if (!HasRequiredRoles(ctx.Member))
             {
