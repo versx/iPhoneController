@@ -6,5 +6,8 @@
   "ownerId": 0000000001,
   "channelIds": [0000000001],
   "commandPrefix": "!",
-  "requiredRoles": [0000000001]
+  "requiredRoles": [0000000001],
+  "pogoAppPath": "",
+  "developer": "",
+  "provisioningProfile": ""
 }

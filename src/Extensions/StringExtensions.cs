@@ -21,5 +21,12 @@
 
             return value.Substring(startIndex, afterStartIndex - startIndex);
         }
+
+        public static string[] RemoveSpaces(this string value)
+        {
+            return value.Replace(" ,", ",")
+                        .Replace(", ", ",")
+                        .Split(',');
+        }
     }
 }

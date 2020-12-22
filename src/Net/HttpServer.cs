@@ -72,6 +72,7 @@
                 return;
             }
 
+            // If already listening, return
             if (_server.IsListening)
             {
                 _logger.Debug($"Already listening, failed to start...");
@@ -80,12 +81,14 @@
 
             try
             {
+                // Start listener
                 _logger.Info($"Starting...");
                 _server.Start();
                 _logger.Info($"Started");
             }
             catch (HttpListenerException ex)
             {
+                // Access denied
                 if (ex.ErrorCode == 5)
                 {
                     _logger.Warn("You need to run the following command in order to not have to run as Administrator or root every start:");
@@ -93,15 +96,18 @@
                 }
                 else
                 {
+                    // Unexpected error thrown
                     throw;
                 }
             }
 
+            // Check if the listener is listening
             if (_server.IsListening)
             {
                 _logger.Debug($"Listening on port {Port}...");
             }
 
+            // Start accepting requests
             _logger.Info($"Starting HttpServer request handler...");
             var requestThread = new Thread(RequestHandler) { IsBackground = true };
             requestThread.Start();
@@ -219,8 +225,13 @@
             }
 
             var device = devices[deviceName];
+            if (string.IsNullOrEmpty(device.IPAddress))
+            {
+                _logger.Warn($"Unable to find IP address for device {deviceName}, failed to send reopen request.");
+                return;
+            }
             var url = $"http://{device.IPAddress}:8080/reopen";
-            var response = Get(url);
+            var response = NetUtils.Get(url);
             var message = string.IsNullOrEmpty(response) ? $"Reopening game for device {device.Name} ({device.Uuid})" : response;
             _logger.Info(message);
         }
@@ -277,23 +288,6 @@
             Start();
 
             _logger.Debug("Disconnect handled.");
-        }
-
-        private string Get(string url)
-        {
-            try
-            {
-                using (var wc = new WebClient())
-                {
-                    wc.Proxy = null;
-                    return wc.DownloadString(url);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-            return null;
         }
 
         #endregion

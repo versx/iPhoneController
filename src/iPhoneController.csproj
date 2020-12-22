@@ -35,5 +35,6 @@
   <ItemGroup>
     <Folder Include="Configuration\" />
     <Folder Include="Commands\" />
+    <Folder Include="Deployment\" />
   </ItemGroup>
 </Project>

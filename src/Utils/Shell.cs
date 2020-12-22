@@ -9,7 +9,7 @@
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("SHELL");
 
-        public static string Execute(string cmd, string args, out int exitCode)
+        public static string Execute(string cmd, string args, out int exitCode, bool includeErrorOutput = false)
         {
             var psi = new ProcessStartInfo
             {
@@ -23,14 +23,12 @@
             };
             var p = Process.Start(psi);
             var output = p.StandardOutput.ReadToEndAsync().GetAwaiter().GetResult();
-            p.OutputDataReceived += (sender, e) =>
+            if (includeErrorOutput)
             {
-                _logger.Debug($"[OUT] {e.Data}");
-            };
-            p.ErrorDataReceived += (sender, e) =>
-            {
-                _logger.Error($"[ERR] {e.Data}");
-            };
+                output += '\n' + p.StandardError.ReadToEndAsync().GetAwaiter().GetResult();
+            }
+            p.OutputDataReceived += (sender, e) => _logger.Debug($"[OUT] {e.Data}");
+            p.ErrorDataReceived += (sender, e) => _logger.Error($"[ERR] {e.Data}");
             p.WaitForExit();
             exitCode = p.ExitCode;
             return output;
