@@ -234,6 +234,7 @@
                 }
 
                 var device = devices[name];
+                _logger.Debug($"Using IP address '{device.IPAddress}' to send restart game request to {device.Name}");
                 // Check if we have IP address for device
                 if (string.IsNullOrEmpty(device.IPAddress))
                 {

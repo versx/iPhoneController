@@ -10,6 +10,7 @@
 
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
+    using iPhoneController.Models;
     using iPhoneController.Utils;
 
     public class IpaDeployer
@@ -89,7 +90,7 @@
 
         public void Deploy(string ipaPath, string deviceNames = "*")
         {
-            var devices = Devices.GetAll();
+            var devices = Device.GetAll();
             var deployAppDevices = new List<string>(deviceNames.RemoveSpaces());
             if (deviceNames == "*")
             {
@@ -223,7 +224,7 @@
 
         private bool DownloadFile(string megaLink, string destinationPath)
         {
-            var result = Shell.Execute("megadl", $"{megaLink} --path={destinationPath}", out var megaExitCode);
+            var result = Shell.Execute("megadl", $"{megaLink} --path={destinationPath}", out var _);
             return result?.ToLower().Contains("downloaded") ?? false;
         }
 
@@ -231,7 +232,7 @@
         {
             try
             {
-                var allowsArbitraryLoadsResult = Shell.Execute(Strings.PlistBuddyPath, $@"-c ""Delete :NSAppTransportSecurity"" {infoPlist}", out var plistBuddyExitCode);
+                var allowsArbitraryLoadsResult = Shell.Execute(Strings.PlistBuddyPath, $@"-c ""Delete :NSAppTransportSecurity"" {infoPlist}", out var _);
                 _logger.Debug($"Remove 'AllowsArbitraryLoadsInWebContent result: {allowsArbitraryLoadsResult}");
                 return true;
             }
