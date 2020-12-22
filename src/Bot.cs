@@ -86,6 +86,7 @@
             );
             _commands.CommandExecuted += Commands_CommandExecuted;
             _commands.CommandErrored += Commands_CommandErrored;
+            _commands.RegisterCommands<AppDeployment>();
             _commands.RegisterCommands<PhoneControl>();
             _server = new HttpServer(_config.Host, _config.Port);
         }
