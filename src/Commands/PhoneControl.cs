@@ -40,13 +40,13 @@
             [Description("Machine name to list devices from, otherwise leave blank."), RemainingText]
             string machineName = "")
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
@@ -77,13 +77,13 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             if (!Shell.CommandExists("idevicescreenshot"))
@@ -144,13 +144,13 @@
             [Description("Machine name to list iOS device versions from, otherwise leave blank."), RemainingText]
             string machineName = "")
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
@@ -212,13 +212,13 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             var devices = Device.GetAll();
@@ -260,13 +260,13 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             if (!Shell.CommandExists("idevicediagnostics"))
@@ -302,13 +302,13 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
@@ -341,13 +341,13 @@
             [Description("Machine name to kill the process on, otherwise leave blank."), RemainingText]
             string machineName = "")
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             // Machine name is not null and machine name does not match current machine name, skip.
@@ -373,13 +373,13 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
@@ -409,13 +409,13 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             var devices = Device.GetAll();
@@ -470,13 +470,13 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!HasRequiredRoles(ctx.Member))
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!IsValidChannel(ctx.Channel.Id))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
             var devices = Device.GetAll();
@@ -501,25 +501,6 @@
         #endregion
 
         #region Private Methods
-
-        private bool HasRequiredRoles(DiscordMember member)
-        {
-            var requiredRoles = _dep.Config.RequiredRoles;
-            if (requiredRoles.Count == 0)
-                return true;
-
-            var memberRoles = member.Roles?.Select(x => x.Id)?.ToList();
-            if (memberRoles == null)
-                return false;
-
-            return requiredRoles.Any(x => memberRoles.Contains(x));
-        }
-
-        private bool IsValidChannel(ulong channelId)
-        {
-            //If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
-            return _dep.Config.ChannelIds.Count == 0 || _dep.Config.ChannelIds.Contains(channelId);
-        }
 
         private List<string> SplitDevicePages()
         {

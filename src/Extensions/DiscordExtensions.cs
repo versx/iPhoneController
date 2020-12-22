@@ -1,6 +1,8 @@
 ﻿namespace iPhoneController.Extensions
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using DSharpPlus;
@@ -38,6 +40,24 @@
             }
 
             return null;
+        }
+
+        public static bool HasRequiredRoles(this DiscordMember member, List<ulong> requiredRoles)
+        {
+            if (requiredRoles.Count == 0)
+                return true;
+
+            var memberRoles = member.Roles?.Select(x => x.Id)?.ToList();
+            if (memberRoles == null)
+                return false;
+
+            return requiredRoles.Any(x => memberRoles.Contains(x));
+        }
+
+        public static bool IsValidChannel(this ulong channelId, List<ulong> validChannelIds)
+        {
+            // If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
+            return validChannelIds.Count == 0 || validChannelIds.Contains(channelId);
         }
     }
 }
