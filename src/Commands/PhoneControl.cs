@@ -92,12 +92,12 @@
             }
 
             var devices = Device.GetAll();
-            var rebootDevices = phoneNames.RemoveSpaces();
+            var screenDevices = phoneNames.RemoveSpaces();
             if (string.Compare(phoneNames, Strings.All, true) == 0)
-                rebootDevices = devices.Keys.ToArray();
+                screenDevices = devices.Keys.ToArray();
 
             var devicesFailed = new Dictionary<string, string>();
-            foreach (var name in rebootDevices)
+            foreach (var name in screenDevices)
             {
                 if (!devices.ContainsKey(name))
                 {
