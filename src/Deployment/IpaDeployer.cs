@@ -88,15 +88,18 @@
             return result;
         }
 
-        public void Deploy(string ipaPath, string deviceNames = Strings.All)
+        public (List<string>, List<string>) Deploy(string appPath, string deviceNames = Strings.All)
         {
+            var successful = new List<string>();
+            var failed = new List<string>();
             var devices = Device.GetAll();
             var deployAppDevices = new List<string>(deviceNames.RemoveSpaces());
             if (string.Compare(deviceNames, Strings.All, true) == 0)
             {
                 deployAppDevices = devices.Keys.ToList();
             }
-            _logger.Info($"Deploying app {ipaPath} to {string.Join(", ", deployAppDevices)}");
+            _logger.Info($"Deploying app {appPath} to {string.Join(", ", deployAppDevices)}");
+            // TODO: Provide better feedback of successful and failed deployments
             Parallel.ForEach(deployAppDevices, deviceName =>
             {
                 if (!devices.ContainsKey(deviceName))
@@ -106,13 +109,24 @@
                 else
                 {
                     var device = devices[deviceName];
-                    var args = $"--id {device.Uuid} --bundle {ipaPath}";
+                    var args = $"--id {device.Uuid} --bundle {appPath}";
                     _logger.Info($"Deploying to device {device.Name} ({device.Uuid})...");
                     var output = Shell.Execute("ios-deploy", args, out var exitCode, true);
-                    _logger.Info($"Deployed Pokemon Go to {device.Name} ({device.Uuid})\r\nOutput: {output}");
+                    var success = output.ToLower().Contains($"[100%] installed package {appPath}");
+                    if (success)
+                    {
+                        successful.Add(device.Name);
+                        _logger.Info($"Deployed {appPath} to {device.Name} ({device.Uuid}) successfully.");
+                    }
+                    else
+                    {
+                        failed.Add(device.Name);
+                        _logger.Warn($"Failed to deploy {appPath} to {device.Name} ({device.Uuid})\nOutput: {output}");
+                    }
                     // TODO: OnDeployCompleted event
                 }
             });
+            return (successful, failed);
         }
 
         public static string GetLatestAppPath()
@@ -124,7 +138,6 @@
             files.Sort((a, b) => b.CompareTo(a));
             return files.FirstOrDefault();
         }
-
 
         private bool InternalResignApp(string ipaPath, string ipaPathSigned)
         {
@@ -178,7 +191,6 @@
             foreach (var file in files)
             {
                 _logger.Debug($"Signing component {file}...");
-                //Shell.Execute(Strings.CodesignPath, $@"--continue -f -s ""{_developer}"" --entitlements {entitlementsPath} {file}", out var _);
                 Codesign(file, true, entitlementsPath);
             }
 
@@ -189,9 +201,6 @@
                 var destinationConfigPath = Path.Combine(pogoDir, "config.json");
                 _logger.Info($"Copying custom config to payload folder.");
                 File.Copy(configPath, destinationConfigPath);
-
-                //_logger.Info($"Signing custom config.json...");
-                //Codesign(destinationConfigPath);
             }
             else
             {
@@ -205,7 +214,6 @@
             foreach (var frameworkFile in frameworkFiles)
             {
                 _logger.Debug($"Signing framework {frameworkFile}");
-                //Shell.Execute(Strings.CodesignPath, $@"-f -s ""{_developer}"" {frameworkFile}", out var _);
                 Codesign(frameworkFile);
             }
 

@@ -54,7 +54,7 @@
 
             var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
-            var pages = SplitPages();
+            var pages = SplitDevicePages();
             for (var i = 0; i < pages.Count; i++)
             {
                 var msg = pages[i];
@@ -373,30 +373,32 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            //if (!HasRequiredRoles(ctx.Member))
-            //{
-            //    await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-            //    return;
-            //}
+            if (!HasRequiredRoles(ctx.Member))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
-            //if (!IsValidChannel(ctx.Channel.Id))
-            //    return;
+            if (!IsValidChannel(ctx.Channel.Id))
+                return;
 
             var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
             {
                 ResignApp = true,
             };
             await ctx.RespondAsync("Starting resign...");
-            var result = deployer.Resign(megaLink, version);
-            if (!result)
+            if (!deployer.Resign(megaLink, version))
             {
                 await ctx.RespondAsync($"Failed to resign IPA");
                 return;
             }
-            await ctx.RespondAsync($"Resign complete, deploying...");
+            await ctx.RespondAsync($"Resign complete, starting deployment to {phoneNames}...");
 
-            deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
-            await ctx.RespondAsync($"Deploy complete");
+            var result = deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
+            var successful = result.Item1.Count > 0 ? $"Successfully deployed app to:\n{string.Join(", ", result.Item1)}" : null;
+            var failed = result.Item2.Count > 0 ? $"Failed to deploy app to:\n{string.Join(", ", result.Item2)}" : null;
+            // TODO: Check for content length over 2048 and split messages if so
+            await ctx.RespondAsync($"{successful}\n{failed}");
         }
 
         [
@@ -407,14 +409,14 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            //if (!HasRequiredRoles(ctx.Member))
-            //{
-            //    await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
-            //    return;
-            //}
+            if (!HasRequiredRoles(ctx.Member))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
 
-            //if (!IsValidChannel(ctx.Channel.Id))
-            //    return;
+            if (!IsValidChannel(ctx.Channel.Id))
+                return;
 
             var devices = Device.GetAll();
             var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
@@ -443,11 +445,19 @@
                     _logger.Info($"Deploying to device {device.Name} ({device.Uuid})...");
                     var output = Shell.Execute("ios-deploy", args, out var exitCode, true);
                     _logger.Debug($"{device.Name} ({device.Uuid}) Deployment output: {output}");
-                    if (output.Length > 2000)
+                    var success = output.ToLower().Contains($"[100%] installed package {appPath}");
+                    if (success)
                     {
-                        output = string.Join("", output.TakeLast(1900));
+                        await ctx.RespondAsync($"Deployed {appPath} to {device.Name} ({device.Uuid}) successfully.");
                     }
-                    await ctx.RespondAsync($"Deployed Pokemon Go to {device.Name} ({device.Uuid})\r\nOutput: {output}");
+                    else
+                    {
+                        if (output.Length > 2000)
+                        {
+                            output = string.Join("", output.TakeLast(1900));
+                        }
+                        await ctx.RespondAsync($"Failed to deploy {appPath} to {device.Name} ({device.Uuid})\nOutput: {output}");
+                    }
                 }
             });
         }
@@ -511,7 +521,7 @@
             return _dep.Config.ChannelIds.Count == 0 || _dep.Config.ChannelIds.Contains(channelId);
         }
 
-        private List<string> SplitPages()
+        private List<string> SplitDevicePages()
         {
             var devices = Device.GetAll();
             var keys = devices.Keys.ToList();

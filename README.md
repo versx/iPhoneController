@@ -8,10 +8,16 @@ Reboot, grab a screenshot, running iOS versions, kill specific running processes
   Retrieve a list of iOS versions running on devices for all machines or a specific one.  
 - `screen iPhone1, iPhone2`  
   Take a screenshot of specific devices.  
+- `reopen iPhone1,iPhone2`  
+  Send restart game request to device IP address.  
 - `reboot iPhone1,iPhone2`  
   Reboot specific devices.  
 - `shutdown iPhone1,iPhone2`  
   Shutdown specific devices.  
+- `resign  https://mega.nz/file/yS7C#Dsh0lZDkk 1.33.0b1 iPhone1,iPhone2`  
+  Download latest app, resign, and deploy to specified devices (leave blank or specify `All` for all devices connected to the machine)  
+- `deploy iPhone1,iPhone2`  
+  Deploy latest already signed app from releases folder to specific devices.  
 - `rm-pogo iPhone1,iPhone2`  
   Removes Pokemon Go from specific devices.  
 - `kill usbmuxd [machine_name]`  
@@ -27,22 +33,22 @@ Reboot, grab a screenshot, running iOS versions, kill specific running processes
 ### Prerequisites:  
 __idevicediagnostics__  
 1. `brew update`  
-2. `brew uninstall --ignore-dependencies libimobiledevice`  
-3. `brew uninstall --ignore-dependencies usbmuxd`  
-4. `brew install --HEAD usbmuxd`  
-5. `brew unlink usbmuxd`  
-6. `brew link usbmuxd`  
-7. `brew install --HEAD libimobiledevice`  
-8. `brew unlink libimobiledevice && brew link libimobiledevice`  
-9. `brew install --HEAD ideviceinstaller`  
-10. `brew unlink ideviceinstaller && brew link ideviceinstaller`  
-11. `sudo chmod -R 777 /var/db/lockdown/`  
+1. `brew uninstall --ignore-dependencies libimobiledevice`  
+1. `brew uninstall --ignore-dependencies usbmuxd`  
+1. `brew install --HEAD usbmuxd`  
+1. `brew unlink usbmuxd`  
+1. `brew link usbmuxd`  
+1. `brew install --HEAD libimobiledevice`  
+1. `brew unlink libimobiledevice && brew link libimobiledevice`  
+1. `brew install --HEAD ideviceinstaller`  
+1. `brew unlink ideviceinstaller && brew link ideviceinstaller`  
+1. `sudo chmod -R 777 /var/db/lockdown/`  
 
 __ios-deploy__  
 If you have previously installed ios-deploy via npm, uninstall it:  
 1. `sudo npm uninstall -g ios-deploy`  
 Install ios-deploy via Homebrew by running:  
-2. `brew install ios-deploy`  
+1. `brew install ios-deploy`  
 
 __MegaTools__  
 1. `brew install megatools`  
@@ -55,24 +61,23 @@ wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh 
 
 **Manually:**  
 1. `wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh --version 2.1.803 && rm dotnet-install.sh`  
-2. `git clone https://github.com/versx/iPhoneController`  
-3. `cd iPhoneController`  
-4. `~/.dotnet/dotnet build`  
-5. `cp config.example.json bin/Debug/netcoreapp2.1/config.json`  
-6. `cd bin/Debug/netcoreapp2.1`  
-7. `nano config.json` / `vi config.json` (Fill out config)  
-8. `~/.dotnet/dotnet iPhoneController.dll`  
+1. `git clone https://github.com/versx/iPhoneController`  
+1. `cd iPhoneController`  
+1. `~/.dotnet/dotnet build`  
+1. `cp config.example.json bin/config.json`  
+1. `cd bin`  
+1. `nano config.json` / `vi config.json` (Fill out config)  
+1. `~/.dotnet/dotnet iPhoneController.dll`  
 
 ## Updating  
 1. `git pull` (from root of folder)  
-2. `~/.dotnet/dotnet build`  
-3. `cd bin/Debug/netcoreapp2.1`  
-4. `~/.dotnet/dotnet iPhoneController.dll`  
+1. `~/.dotnet/dotnet build`  
+1. `cd bin`  
+1. `~/.dotnet/dotnet iPhoneController.dll`  
 
 ## Running  
-From the `bin/debug/netcoreapp2.1` folder type the following:  
+From the `bin` folder type the following:  
 `~/.dotnet/dotnet iPhoneController.dll`  
 
 ## TODO  
 - Localization  
-- Reinstall PoGo
