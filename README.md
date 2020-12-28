@@ -71,8 +71,8 @@ wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh 
 
 ## App Deployment  
 After building `iPhoneController` for the first time:  
-1. In your `bin` folder, create a `releases/jorg/config` folder  
-1. Copy your GC `config.json` to the new `releases/jorg/config` folder  
+1. In your `bin` folder, create a `releases/config` folder  
+1. Copy your GC `config.json` to the new `releases/config` folder  
 1. In your `bin` folder, create a `profiles` folder  
 1. Copy your mobile provisioning profile to the new `profiles` folder  
 
