@@ -13,25 +13,27 @@
     using iPhoneController.Models;
     using iPhoneController.Utils;
 
-    public class IpaDeployer
+    public class AppDeployer
     {
+        #region Variables
+
         private static readonly IEventLogger _logger = EventLogger.GetLogger("IPA-DEPLOY");
         private readonly string _developer;
         private readonly string _provisioningProfile;
 
+        #endregion
 
-        public static string ReleasesFolder => Path.Combine
-        (
-            Strings.ReleasesFolder,
-            "jorg"
-        );
+        #region Properties
 
         public string SignedReleaseFileName { get; private set; }
 
         public bool ResignApp { get; set; }
 
+        #endregion
 
-        public IpaDeployer(string developer, string provisioningProfile)
+        #region Constructor
+
+        public AppDeployer(string developer, string provisioningProfile)
         {
             if (string.IsNullOrEmpty(developer))
             {
@@ -47,13 +49,16 @@
             ResignApp = true;
         }
 
+        #endregion
+
+        #region Public Methods
 
         public bool Resign(string megaLink, string version)
         {
             var fileName = $"J{version}.ipa";
-            var releaseName = Path.Combine(ReleasesFolder, fileName);
+            var releaseName = Path.Combine(Strings.ReleasesFolder, fileName);
             var releaseNameSigned = Path.Combine(
-                ReleasesFolder,
+                Strings.ReleasesFolder,
                 Path.GetFileNameWithoutExtension(fileName) + "Signed.ipa"
             );
             SignedReleaseFileName = releaseNameSigned;
@@ -131,13 +136,17 @@
 
         public static string GetLatestAppPath()
         {
-            var files = Directory.GetFiles(ReleasesFolder, "*.ipa", SearchOption.TopDirectoryOnly)
+            var files = Directory.GetFiles(Strings.ReleasesFolder, "*.ipa", SearchOption.TopDirectoryOnly)
                                  .Where(x => x.ToLower().Contains("signed"))
                                  .ToList();
             // Sort descending
             files.Sort((a, b) => b.CompareTo(a));
             return files.FirstOrDefault();
         }
+
+        #endregion
+
+        #region Private Methods
 
         private bool InternalResignApp(string ipaPath, string ipaPathSigned)
         {
@@ -148,20 +157,14 @@
             var pogoInfoPlist = Path.Combine(pogoDir, "Info.plist");
 
             // Create temp directory we'll be doing everything in
-            if (!Directory.Exists(outDir))
-            {
-                Directory.CreateDirectory(outDir);
-            }
+            CreateTempDirectory(outDir);
 
             // Unzip ipa file
             ZipFile.ExtractToDirectory(ipaPath, outDir, true);
 
             // Delete __MAXOSX folder
             var macosxFolder = Path.Combine(outDir, "__MAXOSX");
-            if (Directory.Exists(macosxFolder))
-            {
-                Directory.Delete(macosxFolder, true);
-            }
+            DeleteMacOsxFolder(macosxFolder);
 
             // Remove NSAllowsArbitraryLoadsInWebContent
             if (!RemoveNSAllowsArbitraryLoadsInWebContent(pogoInfoPlist))
@@ -187,35 +190,16 @@
 
             // Get list of compenents for resigning
             _logger.Info($"Getting list of compenents for resigning with {_developer}");
-            var files = GetComponentFiles(outDir);
-            foreach (var file in files)
-            {
-                _logger.Debug($"Signing component {file}...");
-                Codesign(file, true, entitlementsPath);
-            }
+            SignComponents(outDir, entitlementsPath);
 
             // Copy custom config
-            var configPath = Path.Combine(ReleasesFolder, "config/config.json");
-            if (File.Exists(configPath))
-            {
-                var destinationConfigPath = Path.Combine(pogoDir, "config.json");
-                _logger.Info($"Copying custom config to payload folder.");
-                File.Copy(configPath, destinationConfigPath);
-            }
-            else
-            {
-                _logger.Warn($"No custom config.json file found at {configPath}");
-            }
+            var configPath = Path.Combine(Strings.ReleasesFolder, "config/config.json");
+            var destinationConfigPath = Path.Combine(pogoDir, "config.json");
+            CopyConfig(configPath, destinationConfigPath);
 
             // Sign frameworks and dynamic libraries
             var frameworksPath = Path.Combine(pogoDir, "Frameworks");
-            var frameworkFiles = Directory.GetFiles(frameworksPath);
-            _logger.Info($"Signing frameworks...");
-            foreach (var frameworkFile in frameworkFiles)
-            {
-                _logger.Debug($"Signing framework {frameworkFile}");
-                Codesign(frameworkFile);
-            }
+            SignFrameworks(frameworksPath);
 
             // Zip payload folder
             _logger.Info("Zipping payload folder...");
@@ -249,10 +233,52 @@
             //_logger.Debug($"Codesign result for {file}: {result}");
         }
 
+        private void DeleteMacOsxFolder(string macosxFolder)
+        {
+            if (Directory.Exists(macosxFolder))
+            {
+                Directory.Delete(macosxFolder, true);
+            }
+        }
+
+        private void SignComponents(string appPath, string entitlementsPath)
+        {
+            var files = GetComponentFiles(appPath);
+            foreach (var file in files)
+            {
+                _logger.Debug($"Signing component {file}...");
+                Codesign(file, true, entitlementsPath);
+            }
+        }
+
+        private void CopyConfig(string sourcePath, string destinationPath)
+        {
+            if (File.Exists(sourcePath))
+            {
+                _logger.Info($"Copying custom config to payload folder.");
+                File.Copy(sourcePath, destinationPath);
+            }
+            else
+            {
+                _logger.Warn($"No custom config.json file found at {sourcePath}");
+            }
+        }
+
+        private void SignFrameworks(string frameworksPath)
+        {
+            var frameworkFiles = Directory.GetFiles(frameworksPath);
+            _logger.Info($"Signing frameworks...");
+            foreach (var frameworkFile in frameworkFiles)
+            {
+                _logger.Debug($"Signing framework {frameworkFile}");
+                Codesign(frameworkFile);
+            }
+        }
+
         private bool DownloadFile(string megaLink, string destinationPath)
         {
-            var result = Shell.Execute("megadl", $"{megaLink} --path={destinationPath}", out var _);
-            return result?.ToLower().Contains("downloaded") ?? false;
+            var result = Shell.Execute("megadl", $"{megaLink} --path={destinationPath}", out var megadlExitCode);
+            return megadlExitCode == 0 || (result?.ToLower().Contains("downloaded") ?? false);
         }
 
         private static bool RemoveNSAllowsArbitraryLoadsInWebContent(string infoPlist)
@@ -283,5 +309,16 @@
             list.AddRange(appexFiles);
             return list;
         }
+
+        private void CreateTempDirectory(string tempDir)
+        {
+            if (!Directory.Exists(tempDir))
+            {
+                _logger.Info($"Creating temp build directory: {tempDir}");
+                Directory.CreateDirectory(tempDir);
+            }
+        }
+
+        #endregion
     }
 }

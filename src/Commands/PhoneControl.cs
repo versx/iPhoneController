@@ -377,9 +377,8 @@
                     sb.Clear();
                 }
                 var name = keys[i];
-                var uuid = devices[name];
-                // TODO: Add disabled indicator
-                sb.AppendLine($"**{name}**: {uuid}");
+                var device = devices[name];
+                sb.AppendLine($"**{device.Name}**: {device.Uuid}");
             }
             if (sb.Length > 0)
             {

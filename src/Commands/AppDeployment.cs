@@ -45,7 +45,7 @@
             if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
                 return;
 
-            var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
+            var deployer = new AppDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
             {
                 ResignApp = true,
             };
@@ -85,14 +85,14 @@
             var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
             if (string.Compare(phoneNames, Strings.All, true) == 0)
                 deployAppDevices = devices.Keys.ToList();
-            var appPath = IpaDeployer.GetLatestAppPath();
+            var appPath = AppDeployer.GetLatestAppPath();
             if (string.IsNullOrEmpty(appPath))
             {
                 await ctx.RespondAsync($"No signed app found, make sure to run 'resign' command first.");
                 return;
             }
 
-            var deployer = new IpaDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile);
+            var deployer = new AppDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile);
             _logger.Debug($"Using app {appPath} for deployment.");
             //deployer.Deploy(appPath);
             Parallel.ForEach(deployAppDevices, async deviceName =>
