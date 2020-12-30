@@ -53,7 +53,7 @@ chmod +x dotnet-install.sh
 rm dotnet-install.sh
 
 # Clone repository
-git clone https://github.com/versx/iPhoneController -b sqlite
+git clone https://github.com/versx/iPhoneController
 
 # Change directory into cloned repository
 cd iPhoneController
@@ -62,7 +62,7 @@ cd iPhoneController
 ~/.dotnet/dotnet build
 
 # Copy example config
-cp config.example.json bin/Debug/netcoreapp2.1/config.json
+cp config.example.json bin/config.json
 
 # Change directory into build folder
 #cd bin/Debug/netcoreapp2.1
