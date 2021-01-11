@@ -1,3 +1,8 @@
+[![Build](https://github.com/versx/iPhoneController/workflows/.NET%20Core/badge.svg)](https://github.com/versx/iPhoneController/actions)
+[![GitHub Release](https://img.shields.io/github/release/versx/iPhoneController.svg)](https://github.com/versx/iPhoneController/releases/)
+[![GitHub Contributors](https://img.shields.io/github/contributors/versx/iPhoneController.svg)](https://github.com/versx/iPhoneController/graphs/contributors/)
+[![Discord](https://img.shields.io/discord/552003258000998401.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zZ9h9Xa)  
+
 # iPhoneController  
 Reboot, grab a screenshot, running iOS versions, kill specific running processes, or remove Pokemon Go from multiple devices all from Discord.  
 
