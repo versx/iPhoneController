@@ -7,26 +7,35 @@
 Reboot, grab a screenshot, running iOS versions, kill specific running processes, or remove Pokemon Go from multiple devices all from Discord.  
 
 ## Commands  
+Retrieve a list of devices from all machines or a specific one.  
 - `list [machine_name]`  
-  Retrieve a list of devices from all machines or a specific one.  
+
+Retrieve a list of iOS versions running on devices for all machines or a specific one.  
 - `iosver [machine_name]`  
-  Retrieve a list of iOS versions running on devices for all machines or a specific one.  
+
+Take a screenshot of specific device(s).  
 - `screen iPhone1, iPhone2`  
-  Take a screenshot of specific devices.  
+
+Send restart game request to device(s).  
 - `reopen iPhone1,iPhone2`  
-  Send restart game request to device IP address.  
+
+Reboot specific device(s).  
 - `reboot iPhone1,iPhone2`  
-  Reboot specific devices.  
+
+Shutdown specific device(s).  
 - `shutdown iPhone1,iPhone2`  
-  Shutdown specific devices.  
+
+Download latest app, resign, and deploy to specified devices (leave blank or specify `All` for all devices connected to the machine)  
 - `resign  https://mega.nz/file/yS7C#Dsh0lZDkk 1.33.0b1 iPhone1,iPhone2`  
-  Download latest app, resign, and deploy to specified devices (leave blank or specify `All` for all devices connected to the machine)  
+
+Deploy latest already signed app from releases folder to specific device(s).  
 - `deploy iPhone1,iPhone2`  
-  Deploy latest already signed app from releases folder to specific devices.  
+
+Removes Pokemon Go from specific device(s).  
 - `rm-pogo iPhone1,iPhone2`  
-  Removes Pokemon Go from specific devices.  
+
+Kill a specific process such as `usbmuxd`.  
 - `kill usbmuxd [machine_name]`  
-  Kill a specific process such as `usbmuxd`.  
 
 **Notes:**  
 - *Parameters in brackets `[ ]` are optional*  
