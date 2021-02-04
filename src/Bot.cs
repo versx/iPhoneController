@@ -30,8 +30,6 @@
             _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelIds={string.Join(", ", config.ChannelIds)}]");
             _config = config;
 
-            var devices = Device.GetAll();
-
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>
             {
                 _logger.Debug("Unhandled exception caught.");
