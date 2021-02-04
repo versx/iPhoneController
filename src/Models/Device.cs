@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
@@ -28,6 +29,7 @@
                 return devices;
             }
 
+            var leases = TetheredDhcpLease.ParseDhcpLeases();
             var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             try
             {
@@ -44,8 +46,7 @@
                     if (string.IsNullOrEmpty(ipAddress))
                     {
                         // Look for tethered addresses and blanks. This takes a while
-                        //var tetherData = Shell.Execute("idevicesyslog", $"-u {uuid} -m '192.168.' -T 'IPv4'", out var tetherExitCode);
-                        //ipAddress = ParseIPAddress(tetherData);
+                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(name.ToLower()))?.IpAddress;
                     }
                     _logger.Debug($"Found device {name} ({uuid}) {ipAddress}");
                     if (!devices.ContainsKey(name))
