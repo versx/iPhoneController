@@ -5,6 +5,7 @@
     using System.Net;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using Newtonsoft.Json;
 
@@ -134,7 +135,7 @@
 
         #region Request Handlers
 
-        private void RequestHandler()
+        private async void RequestHandler()
         {
             while (_server.IsListening)
             {
@@ -156,16 +157,8 @@
                             case "/":
                                 if (string.Compare(method, "POST", true) == 0)
                                 {
-                                    var obj = JsonConvert.DeserializeObject<WebhookPayload>(data);
-                                    switch (obj.Type.ToLower())
-                                    {
-                                        case "restart":
-                                            HandleRebootDeviceRequest(obj.Device);
-                                            break;
-                                        case "reopen":
-                                            HandleReopenGameRequest(obj.Device);
-                                            break;
-                                    }
+                                    var payload = JsonConvert.DeserializeObject<WebhookPayload>(data);
+                                    await HandleDeviceRequest(payload);
                                 }
                                 break;
                         }
@@ -198,42 +191,49 @@
             }
         }
 
-        private void HandleRebootDeviceRequest(string deviceName)
+        private async Task HandleDeviceRequest(WebhookPayload payload)
         {
-            _logger.Info($"Handling restart request for device {deviceName}...");
+            _logger.Info($"Handling restart request for device {payload.Device}...");
             var devices = Device.GetAll();
-            if (!devices.ContainsKey(deviceName))
+            if (!devices.ContainsKey(payload.Device))
             {
-                _logger.Warn($"{deviceName} does not exist in device list, skipping reboot.");
+                _logger.Warn($"{payload.Device} does not exist in device list, skipping reboot.");
                 return;
             }
 
-            var device = devices[deviceName];
-            var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
-            var message = exitCode == 0 ? $"Restarting device {device.Name} ({device.Uuid})" : output;
-            _logger.Info(message);
-        }
+            var device = (Device)devices[payload.Device];
 
-        private void HandleReopenGameRequest(string deviceName)
-        {
-            _logger.Info($"Handling reopen request for device {deviceName}...");
-            var devices = Device.GetAll();
-            if (!devices.ContainsKey(deviceName))
+            switch (payload.Type.ToLower())
             {
-                _logger.Warn($"{deviceName} does not exist in device list, skipping reopen.");
-                return;
-            }
+                case "restart":
+                    // TODO: Parallel support
+                    var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
+                    var restartMessage = exitCode == 0 ? $"Restarting device {device.Name} ({device.Uuid})" : output;
+                    _logger.Info(restartMessage);
+                    break;
+                case "reopen":
+                    if (string.IsNullOrEmpty(device.IPAddress))
+                    {
+                        _logger.Warn($"Unable to find IP address for device {device.Name}, failed to send reopen request.");
+                        return;
+                    }
+                    // TODO: Add support for custom port
+                    // TODO: Parallel support
+                    var url = $"http://{device.IPAddress}:8080/reopen";
+                    var response = NetUtils.Get(url);
+                    var reopenMessage = string.IsNullOrEmpty(response) ? $"Reopening game for device {device.Name} ({device.Uuid})" : response;
+                    _logger.Info(reopenMessage);
+                    break;
+                case "profile":
+                    // Remove and reapply the SAM profile
+                    var result = await Device.ReapplySingleAppModeProfile(device);
+                    if (!result)
+                        return;
 
-            var device = devices[deviceName];
-            if (string.IsNullOrEmpty(device.IPAddress))
-            {
-                _logger.Warn($"Unable to find IP address for device {deviceName}, failed to send reopen request.");
-                return;
+                    // Reapplication was successful
+                    _logger.Info($"Reapplied the SAM profile to {device.Name} ({device.Uuid})");
+                    break;
             }
-            var url = $"http://{device.IPAddress}:8080/reopen";
-            var response = NetUtils.Get(url);
-            var message = string.IsNullOrEmpty(response) ? $"Reopening game for device {device.Name} ({device.Uuid})" : response;
-            _logger.Info(message);
         }
 
         #endregion

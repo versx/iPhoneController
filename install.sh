@@ -64,6 +64,9 @@ cd iPhoneController
 # Copy example config
 cp config.example.json bin/config.json
 
+# Copy SAM pogo profile
+cp sam_pogo.mobileconfig bin/sam_pogo.mobileconfig
+
 # Change directory into build folder
 #cd bin/Debug/netcoreapp2.1
 
