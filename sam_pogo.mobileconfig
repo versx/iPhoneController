@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>App</key>
+			<dict>
+				<key>Identifier</key>
+				<string>com.nianticlabs.pokemongo</string>
+				<key>Options</key>
+				<dict>
+					<key>DisableAutoLock</key>
+					<true/>
+					<key>DisableDeviceRotation</key>
+					<true/>
+					<key>DisableSleepWakeButton</key>
+					<true/>
+				</dict>
+			</dict>
+			<key>PayloadDescription</key>
+			<string>Configures Single App Mode</string>
+			<key>PayloadDisplayName</key>
+			<string>Single App Mode</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.app.lock.EA7F2FEE-F023-41E7-BC33-BAA2091A516E</string>
+			<key>PayloadType</key>
+			<string>com.apple.app.lock</string>
+			<key>PayloadUUID</key>
+			<string>EA7F2FEE-F023-41E7-BC33-BAA2091A516E</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Start Pokemon Go in Single App Mode</string>
+	<key>PayloadDisplayName</key>
+	<string>sam_pogo</string>
+	<key>PayloadIdentifier</key>
+	<string>com.apple.configurator.singleappmode</string>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>4B19773B-AE98-4026-99C3-0228D35F7EC6</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>

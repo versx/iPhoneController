@@ -204,6 +204,54 @@
         #region Management
 
         [
+            Command("sam"),
+            Description("Re-apply SingleAppMode profile for specific device(s).")
+        ]
+        public async Task SingleAppModeAsync(CommandContext ctx,
+            [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
+            string phoneNames = Strings.All)
+        {
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            {
+                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                return;
+            }
+
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+                return;
+
+            var devices = Device.GetAll();
+            var samDevices = phoneNames.RemoveSpaces();
+            if (string.Compare(phoneNames, Strings.All, true) == 0)
+                return;
+            // TODO: Parallel support
+            foreach (var name in samDevices)
+            {
+                if (!devices.ContainsKey(name))
+                {
+                    _logger.Warn($"{name} does not exist in device list, skipping reapply of SAM profile.");
+                    continue;
+                }
+
+                var device = devices[name];
+                // Check if we have the ECID for device
+                if (string.IsNullOrEmpty(device.Ecid))
+                {
+                    await ctx.RespondAsync($"Failed to get ECID for device {device.Name} ({device.Uuid}) to reapply SAM profile");
+                    continue;
+                }
+                // Send HTTP GET request to device IP address
+                var result = await Device.ReapplySingleAppModeProfile(device);
+                await ctx.RespondAsync
+                (
+                    result
+                    ? $"Reapplied SAM profile for device {device.Name} ({device.Uuid})"
+                    : $"Error occurred for device {device.Name} ({device.Uuid})"
+                );
+            }
+        }
+
+            [
             Command("reopen"),
             Description("Reopen games for specific device(s).")
         ]

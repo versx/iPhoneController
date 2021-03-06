@@ -47,7 +47,7 @@ wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dot
 chmod +x dotnet-install.sh
 
 # Install .NET Core 2.1.0
-./dotnet-install.sh --version 2.1.803
+./dotnet-install.sh --version 2.1.813
 
 # Delete .NET Core 2.1.0 installer
 rm dotnet-install.sh
@@ -63,6 +63,9 @@ cd iPhoneController
 
 # Copy example config
 cp config.example.json bin/config.json
+
+# Copy SAM pogo profile
+cp sam_pogo.mobileconfig bin/sam_pogo.mobileconfig
 
 # Change directory into build folder
 #cd bin/Debug/netcoreapp2.1

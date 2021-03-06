@@ -75,7 +75,11 @@
             {
                 _logger.Warn("megadl not found on machine");
             }
-            // ping / killall
+            var cfgutil = Shell.CommandExists("cfgutil");
+            if (!cfgutil)
+            {
+                _logger.Warn($"cfgutil (AC2 Automatation Tools) not found on machine.");
+            }
             return iosDeploy && ideviceDiagnostics && ideviceScreenshot && ideviceInfo && ideviceSyslog && megatools;
         }
     }
