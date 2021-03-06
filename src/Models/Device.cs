@@ -110,7 +110,7 @@
                     if (string.IsNullOrEmpty(ipAddress))
                     {
                         // Look for tethered addresses and blanks. This takes a while
-                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(name.ToLower()))?.IpAddress;
+                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(device.Value.Name.ToLower()))?.IpAddress;
                     }
                     devices.Add(device.Value.Name, new Device
                     {
