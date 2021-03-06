@@ -78,9 +78,9 @@ After building `iPhoneController` for the first time:
 ## Single App Mode  
 In order to reapply the SAM profile, you'll need to do the following:  
 1. Copy `sam_pogo.mobileconfig` to your `bin` folder  
-1.) In AC2, click on the `Apple Configurator 2` menu and choose `Install Automation Tools`.  
-1.) In AC2, click on the `Apple Configurator 2` menu and choose `Preferences` > `Organization` > click on your org and choose `Export Supervision Identity` in the bottom left.  
-1.) Move the .crt and .der files to your `bin` folder and rename them to `org.crt` and `org.der`.  
+1. In AC2, click on the `Apple Configurator 2` menu and choose `Install Automation Tools`.  
+1. In AC2, click on the `Apple Configurator 2` menu and choose `Preferences` > `Organization` > click on your org and choose `Export Supervision Identity` in the bottom left.  
+1. Move the .crt and .der files to your `bin` folder and rename them to `org.crt` and `org.der`.  
 
 ## Updating  
 1. `git pull` (from root of folder)  
