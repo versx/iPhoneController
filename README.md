@@ -11,7 +11,7 @@ Reboot, grab a screenshot, running iOS versions, kill specific running processes
 | Command | Description |
 | ------------- | ------------- |
 | `list [machine_name]`  | Retrieve a list of devices from all machines or a specific one. |
-| `iosver`  | Retrieve a list of iOS versions running on devices for all machines or a specific one. |
+| `iosver` [machine_name] | Retrieve a list of iOS versions running on devices for all machines or a specific one. |
 | `screen iPhone1, iPhone2` | Take a screenshot of specific device(s). |
 | `profile iPhone1, iPhone2` | Reapply Single App Mode profile for provided device(s). |
 | `reopen iPhone1, iPhone2` | Send restart game request to device(s). |
@@ -74,6 +74,13 @@ After building `iPhoneController` for the first time:
 1. Copy your GC `config.json` to the new `releases/config` folder  
 1. In your `bin` folder, create a `profiles` folder  
 1. Copy your mobile provisioning profile to the new `profiles` folder  
+
+## Single App Mode  
+In order to reapply the SAM profile, you'll need to do the following:
+1. Copy `sam_pogo.mobileconfig` to your `bin` folder
+1.) In AC2, click on the `Apple Configurator 2` menu and choose `Install Automation Tools`.  
+1.) In AC2, click on the `Apple Configurator 2` menu and choose `Preferences` > `Organization` > click on your org and choose `Export Supervision Identity` in the bottom left.  
+1.) Move the .crt and .der files to your `bin` folder and rename them to `org.crt` and `org.der`.  
 
 ## Updating  
 1. `git pull` (from root of folder)  
