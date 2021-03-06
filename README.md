@@ -16,6 +16,9 @@ Retrieve a list of iOS versions running on devices for all machines or a specifi
 Take a screenshot of specific device(s).  
 - `screen iPhone1, iPhone2`  
 
+Reapply Single App Mode profile for provided device(s).  
+- `profile iPhone1, iPhone2`  
+
 Send restart game request to device(s).  
 - `reopen iPhone1,iPhone2`  
 
