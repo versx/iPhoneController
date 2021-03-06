@@ -7,38 +7,20 @@
 Reboot, grab a screenshot, running iOS versions, kill specific running processes, or remove Pokemon Go from multiple devices all from Discord.  
 
 ## Commands  
-Retrieve a list of devices from all machines or a specific one.  
-- `list [machine_name]`  
 
-Retrieve a list of iOS versions running on devices for all machines or a specific one.  
-- `iosver [machine_name]`  
-
-Take a screenshot of specific device(s).  
-- `screen iPhone1, iPhone2`  
-
-Reapply Single App Mode profile for provided device(s).  
-- `profile iPhone1, iPhone2`  
-
-Send restart game request to device(s).  
-- `reopen iPhone1,iPhone2`  
-
-Reboot specific device(s).  
-- `reboot iPhone1,iPhone2`  
-
-Shutdown specific device(s).  
-- `shutdown iPhone1,iPhone2`  
-
-Download latest app, resign, and deploy to specified devices (leave blank or specify `All` for all devices connected to the machine)  
-- `resign  https://mega.nz/file/yS7C#Dsh0lZDkk 1.33.0b1 iPhone1,iPhone2`  
-
-Deploy latest already signed app from releases folder to specific device(s).  
-- `deploy iPhone1,iPhone2`  
-
-Removes Pokemon Go from specific device(s).  
-- `rm-pogo iPhone1,iPhone2`  
-
-Kill a specific process such as `usbmuxd`.  
-- `kill usbmuxd [machine_name]`  
+| Command | Description |
+| ------------- | ------------- |
+| `list [machine_name]`  | Retrieve a list of devices from all machines or a specific one. |
+| `iosver`  | Retrieve a list of iOS versions running on devices for all machines or a specific one. |
+| `screen iPhone1, iPhone2` | Take a screenshot of specific device(s). |
+| `profile iPhone1, iPhone2` | Reapply Single App Mode profile for provided device(s). |
+| `reopen iPhone1, iPhone2` | Send restart game request to device(s). |
+| `reboot iPhone1, iPhone2` | Reboot specific device(s). |
+| `shutdown iPhone1, iPhone2` | Shutdown specific device(s). |
+| `resign https://mega.nz/file/yS7C#Dsh0lZDkk 1.33.0b1 iPhone1,iPhone2` | Download latest app, resign, and deploy to specified devices (leave blank or specify `All` for all devices connected to the machine) |
+| `deploy iPhone1,iPhone2` | Deploy latest already signed app from releases folder to specific device(s). |
+| `rm-pogo iPhone1,iPhone2` | Removes Pokemon Go from specific device(s). |
+| `kill usbmuxd [machine_name]` | Kill a specific process such as `usbmuxd`.  |
 
 **Notes:**  
 - *Parameters in brackets `[ ]` are optional*  
