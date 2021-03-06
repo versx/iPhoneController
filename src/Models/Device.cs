@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Newtonsoft.Json;
@@ -94,6 +95,9 @@
             {
                 return null;
             }
+
+            var leases = TetheredDhcpLease.ParseDhcpLeases();
+            var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             var obj = JsonConvert.DeserializeObject<DeviceManifest>(output);
             var deviceManifest = obj.Output;
             try
@@ -106,8 +110,7 @@
                     if (string.IsNullOrEmpty(ipAddress))
                     {
                         // Look for tethered addresses and blanks. This takes a while
-                        //var tetherData = Shell.Execute("idevicesyslog", $"-u {uuid} -m '192.168.' -T 'IPv4'", out var tetherExitCode);
-                        //ipAddress = ParseIPAddress(tetherData);
+                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(name.ToLower()))?.IpAddress;
                     }
                     devices.Add(device.Value.Name, new Device
                     {
