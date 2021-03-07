@@ -11,9 +11,9 @@ Reboot, grab a screenshot, running iOS versions, kill specific running processes
 | Command | Description |
 | ------------- | ------------- |
 | `list [machine_name]`  | Retrieve a list of devices from all machines or a specific one. |
-| `iosver` [machine_name] | Retrieve a list of iOS versions running on devices for all machines or a specific one. |
+| `iosver [machine_name]` | Retrieve a list of iOS versions running on devices for all machines or a specific one. |
 | `screen iPhone1, iPhone2` | Take a screenshot of specific device(s). |
-| `profile iPhone1, iPhone2` | Reapply Single App Mode profile for provided device(s). |
+| `sam iPhone1, iPhone2` | Reapply Single App Mode profile for provided device(s). |
 | `reopen iPhone1, iPhone2` | Send restart game request to device(s). |
 | `reboot iPhone1, iPhone2` | Reboot specific device(s). |
 | `shutdown iPhone1, iPhone2` | Shutdown specific device(s). |
