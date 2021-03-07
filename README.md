@@ -92,5 +92,12 @@ In order to reapply the SAM profile, you'll need to do the following:
 From the `bin` folder type the following:  
 `~/.dotnet/dotnet iPhoneController.dll`  
 
+## FAQ
+Q. How do I get the profile ID?  
+A Run `security find-identity -p codesigning`  
+
+Q. I'm receiveing `{"Command":"list","Output":{},"Type"::CommandOutput","Devices":[]}` when `cfgutil --format JSON list` is run.  
+A. Reinstall Apple Configurator 2  
+
 ## TODO  
 - Localization  
