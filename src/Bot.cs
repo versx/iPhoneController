@@ -1,6 +1,7 @@
 ﻿namespace iPhoneController
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -13,22 +14,22 @@
     using iPhoneController.Configuration;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
-    using iPhoneController.Models;
     using iPhoneController.Net;
 
     public class Bot
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("BOT");
 
-        private readonly DiscordClient _client;
+        private readonly Dictionary<ulong, DiscordClient> _guilds;
         private readonly CommandsNextModule _commands;
         private readonly Config _config;
         private readonly HttpServer _server;
 
         public Bot(Config config)
         {
-            _logger.Trace($"WhConfig [OwnerId={config.OwnerId}, GuildId={config.GuildId}, ChannelIds={string.Join(", ", config.ChannelIds)}]");
+            _logger.Trace($"Config [Host={config.Host}, Port={config.Port}, Servers={config.Servers.Count:N0}]");
             _config = config;
+            _guilds = new Dictionary<ulong, DiscordClient>();
 
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>
             {
@@ -37,53 +38,63 @@
 
                 if (e.IsTerminating)
                 {
-                    if (_client != null)
+                    foreach (var (_, guild) in _guilds)
                     {
-                        var owner = await _client.GetUserAsync(_config.OwnerId);
-                        if (owner == null)
+                        if (guild != null)
                         {
-                            _logger.Warn($"Failed to get owner from id {_config.OwnerId}.");
-                            return;
-                        }
+                            foreach (var (_, server) in _config.Servers)
+                            {
+                                var owner = await guild.GetUserAsync(server.OwnerId);
+                                if (owner == null)
+                                {
+                                    _logger.Warn($"Failed to get owner from id {server.OwnerId}.");
+                                    return;
+                                }
 
-                        await _client.SendDirectMessage(owner, Strings.CrashMessage, null);
+                                await guild.SendDirectMessage(owner, Strings.CrashMessage, null);
+                            }
+                        }
                     }
                 }
             };
 
-            _client = new DiscordClient(new DiscordConfiguration
+            foreach (var (guildId, guildConfig) in _config.Servers)
             {
-                AutomaticGuildSync = true,
-                AutoReconnect = true,
-                EnableCompression = true,
-                Token = _config.Token,
-                TokenType = TokenType.Bot,
-                UseInternalLogHandler = true
-            });
-            _client.Ready += Client_Ready;
-            _client.ClientErrored += Client_ClientErrored;
-            _client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
-
-            DependencyCollection dep;
-            using (var d = new DependencyCollectionBuilder())
-            {
-                d.AddInstance(new Dependencies(_config));
-                dep = d.Build();
-            }
-
-            _commands = _client.UseCommandsNext
-            (
-                new CommandsNextConfiguration
+                var client = new DiscordClient(new DiscordConfiguration
                 {
-                    StringPrefix = _config.CommandPrefix?.ToString(),
-                    EnableDms = true,
-                    EnableMentionPrefix = string.IsNullOrEmpty(_config.CommandPrefix),
-                    EnableDefaultHelp = false,
-                    CaseSensitive = false,
-                    IgnoreExtraArguments = true,
-                    Dependencies = dep
+                    AutomaticGuildSync = true,
+                    AutoReconnect = true,
+                    EnableCompression = true,
+                    Token = guildConfig.Token,
+                    TokenType = TokenType.Bot,
+                    UseInternalLogHandler = true
+                });
+                client.Ready += Client_Ready;
+                client.ClientErrored += Client_ClientErrored;
+                client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
+
+                DependencyCollection dep;
+                using (var d = new DependencyCollectionBuilder())
+                {
+                    d.AddInstance(new Dependencies(_config));
+                    dep = d.Build();
                 }
-            );
+
+                _commands = client.UseCommandsNext
+                (
+                    new CommandsNextConfiguration
+                    {
+                        StringPrefix = guildConfig.CommandPrefix?.ToString(),
+                        EnableDms = true,
+                        EnableMentionPrefix = string.IsNullOrEmpty(guildConfig.CommandPrefix),
+                        EnableDefaultHelp = false,
+                        CaseSensitive = false,
+                        IgnoreExtraArguments = true,
+                        Dependencies = dep
+                    }
+                );
+                _guilds.Add(guildId, client);
+            }
             _commands.CommandExecuted += Commands_CommandExecuted;
             _commands.CommandErrored += Commands_CommandErrored;
             _commands.RegisterCommands<AppDeployment>();
@@ -96,10 +107,11 @@
             _logger.Trace("Start");
             _logger.Info("Connecting to Discord...");
 
-            // TODO: Fails on M1 while debugging
-            _client.ConnectAsync();
-            _server.Start();
-
+            foreach (var (_, guild) in _guilds)
+            {
+                guild.ConnectAsync();
+                _server.Start();
+            }
         }
 
         public void Stop()
@@ -107,7 +119,10 @@
             _logger.Trace("Stop");
             _logger.Info("Disconnecting Discord client...");
 
-            _client.DisconnectAsync();
+            foreach (var (_, guild) in _guilds)
+            {
+                guild.DisconnectAsync();
+            }
             _server.Stop();
         }
 
@@ -171,7 +186,7 @@
                 // The user lacks required permissions, 
                 var emoji = DiscordEmoji.FromName(e.Context.Client, ":x:");
 
-                var example = $"Command Example: ```{_config.CommandPrefix}{e.Command.Name} {string.Join(" ", e.Command.Arguments.Select(x => x.IsOptional ? $"[{x.Name}]" : x.Name))}```\r\n*Parameters in brackets are optional.*";
+                var example = $"Command Example: ```<prefix>{e.Command.Name} {string.Join(" ", e.Command.Arguments.Select(x => x.IsOptional ? $"[{x.Name}]" : x.Name))}```\r\n*Parameters in brackets are optional.*";
 
                 // let's wrap the response into an embed
                 var embed = new DiscordEmbedBuilder

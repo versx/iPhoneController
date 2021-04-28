@@ -8,6 +8,7 @@
     using DSharpPlus;
     using DSharpPlus.Entities;
 
+    using iPhoneController.Configuration;
     using iPhoneController.Diagnostics;
 
     public static class DiscordExtensions
@@ -42,22 +43,32 @@
             return null;
         }
 
-        public static bool HasRequiredRoles(this DiscordMember member, List<ulong> requiredRoles)
+        public static bool HasRequiredRoles(this DiscordMember member, List<DiscordConfig> servers)
         {
-            if (requiredRoles.Count == 0)
-                return true;
+            foreach (var server in servers)
+            {
+                if (server.RequiredRoles.Count == 0)
+                    continue;
 
-            var memberRoles = member.Roles?.Select(x => x.Id)?.ToList();
-            if (memberRoles == null)
-                return false;
+                var memberRoles = member.Roles?.Select(x => x.Id)?.ToList();
+                if (memberRoles == null)
+                    continue;
 
-            return requiredRoles.Any(x => memberRoles.Contains(x));
+                if (server.RequiredRoles.Any(x => memberRoles.Contains(x)))
+                    return true;
+            }
+            return false;
         }
 
-        public static bool IsValidChannel(this ulong channelId, List<ulong> validChannelIds)
+        public static bool IsValidChannel(this ulong channelId, List<DiscordConfig> servers)
         {
-            // If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
-            return validChannelIds.Count == 0 || validChannelIds.Contains(channelId);
+            foreach (var server in servers)
+            {
+                // If no channel id is specified allow the command to execute in all channels, otherwise only the channel specified.
+                if (server.ChannelIds.Count == 0 || server.ChannelIds.Contains(channelId))
+                    return true;
+            }
+            return false;
         }
     }
 }

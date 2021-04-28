@@ -2,11 +2,20 @@
   "host": "*",
   "port": 6542,
   "token": "",
-  "guildId": 0000000001,
-  "ownerId": 0000000001,
-  "channelIds": [0000000001],
-  "commandPrefix": "!",
-  "requiredRoles": [0000000001],
+  "servers": {
+    "1000000000": {
+      "ownerId": 1000000000,
+      "channelIds": [1000000000],
+      "commandPrefix": "!",
+      "requiredRoles": [1000000000]
+    },
+    "2000000000": {
+      "ownerId": 2000000000,
+      "channelIds": [2000000000],
+      "commandPrefix": "!",
+      "requiredRoles": [2000000000]
+    }
+  },
   "developer": "",
   "provisioningProfile": ""
 }
