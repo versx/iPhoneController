@@ -40,14 +40,14 @@ sudo chmod -R 777 /var/db/lockdown/
 # Install megatools  
 brew install megatools  
 
-# Download .NET Core 2.1 installer
-wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh
+# Download .NET 5 installer
+wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh
 
 # Make installer executable
 chmod +x dotnet-install.sh
 
 # Install .NET Core 2.1.0
-./dotnet-install.sh --version 2.1.813
+./dotnet-install.sh --version 5.0.202
 
 # Delete .NET Core 2.1.0 installer
 rm dotnet-install.sh
@@ -68,7 +68,7 @@ cp config.example.json bin/config.json
 cp sam_pogo.mobileconfig bin/sam_pogo.mobileconfig
 
 # Change directory into build folder
-#cd bin/Debug/netcoreapp2.1
+#cd bin/
 
 # Start iPhoneController.dll
 #~/.dotnet/dotnet iPhoneController.dll

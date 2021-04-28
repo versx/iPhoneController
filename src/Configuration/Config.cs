@@ -53,7 +53,9 @@
 
         public static Config Load(string filePath)
         {
-            return LoadInit<Config>(filePath, typeof(Config));
+            var config = LoadInit<Config>(filePath, typeof(Config));
+            Models.Device.UseIosDeploy = config.UseIosDeploy;
+            return config;
         }
 
         private static T LoadInit<T>(string filePath, Type type)

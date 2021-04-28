@@ -29,44 +29,10 @@ Reboot, grab a screenshot, running iOS versions, kill specific running processes
 
 ## Installation  
 
-### Prerequisites:  
-__idevicediagnostics__  
-1. `brew update`  
-1. `brew uninstall --ignore-dependencies libimobiledevice`  
-1. `brew uninstall --ignore-dependencies usbmuxd`  
-1. `brew install --HEAD usbmuxd`  
-1. `brew unlink usbmuxd`  
-1. `brew link usbmuxd`  
-1. `brew install --HEAD libimobiledevice`  
-1. `brew unlink libimobiledevice && brew link libimobiledevice`  
-1. `brew install --HEAD ideviceinstaller`  
-1. `brew unlink ideviceinstaller && brew link ideviceinstaller`  
-1. `sudo chmod -R 777 /var/db/lockdown/`  
-
-__ios-deploy__  
-If you have previously installed ios-deploy via npm, uninstall it:  
-1. `sudo npm uninstall -g ios-deploy`  
-Install ios-deploy via Homebrew by running:  
-1. `brew install ios-deploy`  
-
-__MegaTools__  
-1. `brew install megatools`  
-
-### iPhoneController  
-**Installation script:** (Run the following commands, fill out config, skip to Running section)  
+Run the following commands and fill out config.  
 ```
 wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
 ```
-
-**Manually:**  
-1. `wget https://dotnetwebsite.azurewebsites.net/download/dotnet-core/scripts/v1/dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh --version 2.1.803 && rm dotnet-install.sh`  
-1. `git clone https://github.com/versx/iPhoneController`  
-1. `cd iPhoneController`  
-1. `~/.dotnet/dotnet build`  
-1. `cp config.example.json bin/config.json`  
-1. `cd bin`  
-1. `nano config.json` / `vi config.json` (Fill out config)  
-1. `~/.dotnet/dotnet iPhoneController.dll`  
 
 ## App Deployment  
 After building `iPhoneController` for the first time:  
