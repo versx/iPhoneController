@@ -77,7 +77,7 @@
         ]
         public async Task ScreenshotAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
@@ -218,7 +218,7 @@
         ]
         public async Task SingleAppModeAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
@@ -269,7 +269,7 @@
         ]
         public async Task ReopenAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
@@ -320,7 +320,7 @@
         ]
         public async Task RebootAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
@@ -365,7 +365,7 @@
         ]
         public async Task ShutdownAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
