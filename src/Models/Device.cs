@@ -84,48 +84,22 @@
         public string Ecid { get; set; }
 
         /// <summary>
+        /// Determines whether to use ios-deploy to fetch devices instead of cfgutil
+        /// </summary>
+        public static bool UseIosDeploy { get; set; }
+
+        /// <summary>
         /// Get all devices connected
         /// </summary>
         /// <returns>Returns a dictionary of device names and devices</returns>
         public static Dictionary<string, Device> GetAll()
         {
-            var devices = new Dictionary<string, Device>();
-            var output = Shell.Execute("cfgutil", "--format JSON list", out var exitCode);
-            if (string.IsNullOrEmpty(output) || exitCode != 0)
+            // TODO: Cache devices, fetch again only if new device detected (check if ilibmobiledevice-net has events for device status)
+            if (UseIosDeploy)
             {
-                return null;
+                return GetDevicesIosDeploy();
             }
-
-            var leases = TetheredDhcpLease.ParseDhcpLeases();
-            var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var obj = JsonConvert.DeserializeObject<DeviceManifest>(output);
-            var deviceManifest = obj.Output;
-            try
-            {
-                foreach (var device in deviceManifest)
-                {
-                    // Look for WiFi addresses since it's quick
-                    var ipData = Shell.Execute("ping", $"-t 1 {device.Value.Name}", out var ipExitCode);
-                    var ipAddress = ParseIPAddress(ipData);
-                    if (string.IsNullOrEmpty(ipAddress))
-                    {
-                        // Look for tethered addresses and blanks. This takes a while
-                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(device.Value.Name.ToLower()))?.IpAddress;
-                    }
-                    devices.Add(device.Value.Name, new Device
-                    {
-                        Name = device.Value.Name,
-                        Uuid = device.Value.Uuid,
-                        IPAddress = ipAddress,
-                        Ecid = device.Value.Ecid,
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"ERROR: {ex}");
-            }
-            return devices;
+            return GetDevicesCfgUtil();
         }
 
         /// <summary>
@@ -156,11 +130,12 @@
 
         private static async Task<bool> CfgUtil(Device device, string command, string profile, bool isIdentifier = false)
         {
-            var orgCrt = Path.Combine(Directory.GetCurrentDirectory(), "org.crt");
-            var orgDer = Path.Combine(Directory.GetCurrentDirectory(), "org.der");
+            var curDir = Directory.GetCurrentDirectory();
+            var orgCrt = Path.Combine(curDir, "org.crt");
+            var orgDer = Path.Combine(curDir, "org.der");
             if (!isIdentifier)
             {
-                profile = Path.Combine(Directory.GetCurrentDirectory(), profile);
+                profile = Path.Combine(curDir, profile);
             }
             var output = await Shell.ExecuteAsync("cfgutil", $"-e {device.Ecid} -K \"{orgDer}\" -C \"{orgCrt}\" {command} \"{profile}\"", true);
             if (output.ToLower().Contains("error"))
@@ -182,7 +157,7 @@
                 return data.GetBetween("(", ")");
             }
 
-            var ipaddr = string.Empty;
+            var ipAddr = string.Empty;
             var ipLine = string.Empty;
             var lines = data.ToLower().Split("\n");
             foreach (var line in lines)
@@ -204,11 +179,100 @@
                 _logger.Debug($"IP line: {line}");
                 if (line.Contains("192.168."))
                 {
-                    ipaddr = line;
+                    ipAddr = line;
                     break;
                 }
             }
-            return ipaddr;
+            return ipAddr;
+        }
+
+        private static Dictionary<string, Device> GetDevicesIosDeploy()
+        {
+            var devices = new Dictionary<string, Device>();
+            var output = Shell.Execute("ios-deploy", "-c device_identification", out var exitCode);
+            if (string.IsNullOrEmpty(output))// || exitCode != 0)
+            {
+                // Failed
+                return devices;
+            }
+
+            var leases = TetheredDhcpLease.ParseDhcpLeases();
+            var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            try
+            {
+                foreach (var line in split)
+                {
+                    if (!line.ToLower().Contains("found"))
+                        continue;
+
+                    var uuid = line.GetBetween("Found ", " (");
+                    var name = line.GetBetween("'", "'");
+                    // Look for WiFi addresses since it's quick
+                    var ipData = Shell.Execute("ping", $"-t 1 {name}", out var ipExitCode);
+                    var ipAddress = ParseIPAddress(ipData);
+                    if (string.IsNullOrEmpty(ipAddress))
+                    {
+                        // Check if device is tethered and in dhcpd list
+                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(name.ToLower()))?.IpAddress;
+                    }
+                    _logger.Debug($"Found device {name} ({uuid}) {ipAddress}");
+                    if (!devices.ContainsKey(name))
+                    {
+                        devices.Add(name, new Device
+                        {
+                            Name = name,
+                            Uuid = uuid,
+                            IPAddress = ipAddress
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"ERROR: {ex}");
+            }
+            return devices;
+        }
+
+        private static Dictionary<string, Device> GetDevicesCfgUtil()
+        {
+            var devices = new Dictionary<string, Device>();
+            var output = Shell.Execute("cfgutil", "--format JSON list", out var exitCode);
+            if (string.IsNullOrEmpty(output) || exitCode != 0)
+            {
+                return null;
+            }
+
+            var leases = TetheredDhcpLease.ParseDhcpLeases();
+            var split = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var obj = JsonConvert.DeserializeObject<DeviceManifest>(output);
+            var deviceManifest = obj.Output;
+            try
+            {
+                foreach (var device in deviceManifest)
+                {
+                    // Look for WiFi addresses since it's quick
+                    var ipData = Shell.Execute("ping", $"-t 1 {device.Value.Name}", out var ipExitCode);
+                    var ipAddress = ParseIPAddress(ipData);
+                    if (string.IsNullOrEmpty(ipAddress))
+                    {
+                        // Check if device is tethered and in dhcpd list
+                        ipAddress = leases.FirstOrDefault(x => x.Name.ToLower().Contains(device.Value.Name.ToLower()))?.IpAddress;
+                    }
+                    devices.Add(device.Value.Name, new Device
+                    {
+                        Name = device.Value.Name,
+                        Uuid = device.Value.Uuid,
+                        IPAddress = ipAddress,
+                        Ecid = device.Value.Ecid,
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"ERROR: {ex}");
+            }
+            return devices;
         }
     }
 }
