@@ -141,24 +141,27 @@
             {
                 var context = _server.GetContext();
                 var response = context.Response;
+                var responseMessage = Strings.DefaultResponseMessage;
 
                 if (context.Request?.InputStream == null)
                     continue;
 
-                using (var sr = new StreamReader(context.Request.InputStream))
+                using (var sr = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
                 {
                     try
                     {
                         var data = sr.ReadToEnd();
                         var endpoint = context.Request.RawUrl;
                         var method = context.Request.HttpMethod;
+                        var isGET = string.Compare(method, "GET", true) == 0;
+                        var isPOST = string.Compare(method, "POST", true) == 0;
                         switch (endpoint)
                         {
                             case "/":
-                                if (string.Compare(method, "POST", true) == 0)
+                                if (isPOST)
                                 {
                                     var payload = JsonConvert.DeserializeObject<WebhookPayload>(data);
-                                    await HandleDeviceRequest(payload);
+                                    responseMessage = await HandleDeviceRequest(payload);
                                 }
                                 break;
                         }
@@ -174,7 +177,7 @@
 
                 try
                 {
-                    var buffer = Encoding.UTF8.GetBytes(Strings.DefaultResponseMessage);
+                    var buffer = Encoding.UTF8.GetBytes(responseMessage);
                     response.ContentLength64 = buffer.Length;
                     if (response?.OutputStream != null)
                     {
@@ -191,18 +194,18 @@
             }
         }
 
-        private async Task HandleDeviceRequest(WebhookPayload payload)
+        private async Task<string> HandleDeviceRequest(WebhookPayload payload)
         {
             _logger.Info($"Handling restart request for device {payload.Device}...");
             var devices = Device.GetAll();
             if (!devices.ContainsKey(payload.Device))
             {
-                _logger.Warn($"{payload.Device} does not exist in device list, skipping reboot.");
-                return;
+                var existsMessage = $"{payload.Device} does not exist in device list, skipping.";
+                _logger.Warn(existsMessage);
+                return existsMessage;
             }
 
             var device = (Device)devices[payload.Device];
-
             switch (payload.Type.ToLower())
             {
                 case "restart":
@@ -210,12 +213,12 @@
                     var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
                     var restartMessage = exitCode == 0 ? $"Restarting device {device.Name} ({device.Uuid})" : output;
                     _logger.Info(restartMessage);
-                    break;
+                    return restartMessage;
                 case "reopen":
                     if (string.IsNullOrEmpty(device.IPAddress))
                     {
                         _logger.Warn($"Unable to find IP address for device {device.Name}, failed to send reopen request.");
-                        return;
+                        return $"{payload.Device} unable to find IP address";
                     }
                     // TODO: Add support for custom port
                     // TODO: Parallel support
@@ -223,16 +226,22 @@
                     var response = NetUtils.Get(url);
                     var reopenMessage = string.IsNullOrEmpty(response) ? $"Reopening game for device {device.Name} ({device.Uuid})" : response;
                     _logger.Info(reopenMessage);
-                    break;
+                    return reopenMessage;
                 case "profile":
                     // Remove and reapply the SAM profile
                     var result = await Device.ReapplySingleAppModeProfile(device);
                     if (!result)
-                        return;
-
+                    {
+                        return $"{payload.Device} ";
+                    }
                     // Reapplication was successful
-                    _logger.Info($"Reapplied the SAM profile to {device.Name} ({device.Uuid})");
-                    break;
+                    var profileMessage = $"Reapplied the SAM profile to {device.Name} ({device.Uuid})";
+                    _logger.Info(profileMessage);
+                    return profileMessage;
+                default:
+                    var unknownMessage = $"{payload.Device} Invalid request type: {payload.Type}";
+                    _logger.Warn(unknownMessage);
+                    return unknownMessage;
             }
         }
 

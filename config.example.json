@@ -8,5 +8,6 @@
   "commandPrefix": "!",
   "requiredRoles": [0000000001],
   "developer": "",
-  "provisioningProfile": ""
+  "provisioningProfile": "",
+  "useIosDeploy": false
 }

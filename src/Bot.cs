@@ -13,7 +13,6 @@
     using iPhoneController.Configuration;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
-    using iPhoneController.Models;
     using iPhoneController.Net;
 
     public class Bot
