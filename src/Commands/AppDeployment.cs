@@ -34,7 +34,7 @@
             [Description("Mega download link")] string megaLink,
             [Description("Version")] string version,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
@@ -70,7 +70,7 @@
         ]
         public async Task DeployPoGoAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
@@ -131,7 +131,7 @@
         ]
         public async Task RemovePoGoAsync(CommandContext ctx,
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
-            string phoneNames = Strings.All)
+            string phoneNames)
         {
             if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
             {
