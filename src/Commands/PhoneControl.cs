@@ -39,13 +39,16 @@
             [Description("Machine name to list devices from, otherwise leave blank."), RemainingText]
             string machineName = "")
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
@@ -76,13 +79,16 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             if (!Shell.CommandExists("idevicescreenshot"))
@@ -143,13 +149,16 @@
             [Description("Machine name to list iOS device versions from, otherwise leave blank."), RemainingText]
             string machineName = "")
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             if (!string.IsNullOrEmpty(machineName) && string.Compare(machineName, Environment.MachineName, true) != 0)
@@ -211,13 +220,16 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             var devices = Device.GetAll();
@@ -259,13 +271,16 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             var devices = Device.GetAll();
@@ -307,13 +322,16 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             if (!Shell.CommandExists("idevicediagnostics"))
@@ -349,13 +367,16 @@
             [Description("iPhone names i.e. `iPhoneHV1SE`. Comma delimiter supported `iPhoneHV1SE,iPhoneHV2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             //TODO: Check if idevicediagnostics is installed.
@@ -388,13 +409,16 @@
             [Description("Machine name to kill the process on, otherwise leave blank."), RemainingText]
             string machineName = "")
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             // Machine name is not null and machine name does not match current machine name, skip.

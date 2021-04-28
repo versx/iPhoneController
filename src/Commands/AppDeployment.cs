@@ -36,13 +36,16 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             var deployer = new AppDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
@@ -72,13 +75,16 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             var devices = Device.GetAll();
@@ -133,13 +139,16 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames = Strings.All)
         {
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.RequiredRoles))
+            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+                return;
+
+            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.ChannelIds))
+            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
             var devices = Device.GetAll();

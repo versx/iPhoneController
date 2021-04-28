@@ -20,23 +20,8 @@
         [JsonProperty("port")]
         public ushort Port { get; set; }
 
-        [JsonProperty("guildId")]
-        public ulong GuildId { get; set; }
-
-        [JsonProperty("ownerId")]
-        public ulong OwnerId { get; set; }
-
-        [JsonProperty("channelIds")]
-        public List<ulong> ChannelIds { get; set; }
-
-        [JsonProperty("token")]
-        public string Token { get; set; }
-
-        [JsonProperty("commandPrefix")]
-        public string CommandPrefix { get; set; }
-
-        [JsonProperty("requiredRoles")]
-        public List<ulong> RequiredRoles { get; set; }
+        [JsonProperty("servers")]
+        public Dictionary<ulong, DiscordConfig> Servers { get; set; }
 
         [JsonProperty("developer")]
         public string Developer { get; set; }
@@ -53,10 +38,9 @@
 
         public Config()
         {
-            ChannelIds = new List<ulong>();
             Host = "*";
             Port = 6542;
-            RequiredRoles = new List<ulong>();
+            Servers = new Dictionary<ulong, DiscordConfig>();
         }
 
         #endregion
