@@ -34,18 +34,18 @@ Run the following commands and fill out config.
 wget https://raw.githubusercontent.com/versx/iPhoneController/master/install.sh && chmod +x install.sh && ./install.sh && rm install.sh
 ```
 
-## App Deployment  
+### App Deployment  
 After building `iPhoneController` for the first time:  
 1. In your `bin` folder, create a `releases/config` folder  
 1. Copy your GC `config.json` to the new `releases/config` folder  
 1. In your `bin` folder, create a `profiles` folder  
 1. Copy your mobile provisioning profile to the new `profiles` folder  
 
-## Single App Mode  
+### Single App Mode  
 In order to reapply the SAM profile, you'll need to do the following:  
 1. Copy `sam_pogo.mobileconfig` to your `bin` folder  
 1. In AC2, click on the `Apple Configurator 2` menu and choose `Install Automation Tools`.  
-1. In AC2, click on the `Apple Configurator 2` menu and choose `Preferences` > `Organization` > click on your org and choose `Export Supervision Identity` in the bottom left.  
+1. In AC2, click on the `Apple Configurator 2` menu and choose `Preferences` > `Organization` > click on your org and choose `Export Supervision Identity` at the bottom left.  
 1. Move the .crt and .der files to your `bin` folder and rename them to `org.crt` and `org.der`.  
 
 ## Updating  
@@ -60,10 +60,10 @@ From the `bin` folder type the following:
 
 ## FAQ
 Q. How do I get the profile ID?  
-A Run `security find-identity -p codesigning`  
+A. Run `security find-identity -p codesigning`  
 
 Q. I'm receiveing `{"Command":"list","Output":{},"Type"::CommandOutput","Devices":[]}` when `cfgutil --format JSON list` is run.  
-A. Reinstall Apple Configurator 2  
+A. Reinstall Apple Configurator 2 automation tools  
 
 ## TODO  
 - Localization  
