@@ -1,19 +1,20 @@
 {
   "host": "*",
   "port": 6542,
-  "token": "",
   "servers": {
     "1000000000": {
       "ownerId": 1000000000,
       "channelIds": [1000000000],
       "commandPrefix": "!",
-      "requiredRoles": [1000000000]
+      "requiredRoles": [1000000000],
+      "token": ""
     },
     "2000000000": {
       "ownerId": 2000000000,
       "channelIds": [2000000000],
       "commandPrefix": "!",
-      "requiredRoles": [2000000000]
+      "requiredRoles": [2000000000],
+      "token": ""
     }
   },
   "developer": "",
