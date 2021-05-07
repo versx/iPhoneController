@@ -97,6 +97,12 @@
                 return;
             }
 
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
+
             var devices = Device.GetAll();
             var screenDevices = phoneNames.RemoveSpaces();
             if (string.Compare(phoneNames, Strings.All, true) == 0)
@@ -232,6 +238,12 @@
             if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
+
             var devices = Device.GetAll();
             var samDevices = phoneNames.RemoveSpaces();
             if (string.Compare(phoneNames, Strings.All, true) == 0)
@@ -282,6 +294,12 @@
 
             if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
+
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
 
             var devices = Device.GetAll();
             var reopenDevices = phoneNames.RemoveSpaces();
@@ -340,6 +358,12 @@
                 return;
             }
 
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
+
             var devices = Device.GetAll();
             var rebootDevices = phoneNames.RemoveSpaces();
             if (string.Compare(phoneNames, Strings.All, true) == 0)
@@ -378,6 +402,12 @@
 
             if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
+
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
 
             //TODO: Check if idevicediagnostics is installed.
             var devices = Device.GetAll();
@@ -434,14 +464,14 @@
 
         #region Private Methods
 
-        private List<string> SplitDevicePages()
+        private static List<string> SplitDevicePages()
         {
             var devices = Device.GetAll();
             var keys = devices.Keys.ToList();
             var pages = new List<string>();
             var maxDevicePerPage = 20;
             var sb = new System.Text.StringBuilder();
-            for (int i = 0; i < keys.Count; i++)
+            for (var i = 0; i < keys.Count; i++)
             {
                 if (i % maxDevicePerPage == 0 && i != 0)
                 {

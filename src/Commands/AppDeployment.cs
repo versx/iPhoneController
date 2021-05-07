@@ -28,7 +28,7 @@
 
         [
             Command("resign"),
-            Description("Download IPA, resign, and deploy to device(s)."),
+            Description("Download IPA, resign, and deploy to device(s). If no devices are provided, it will only resign and not deploy."),
         ]
         public async Task ResignPoGoAsync(CommandContext ctx,
             [Description("Mega download link")] string megaLink,
@@ -52,19 +52,29 @@
             {
                 ResignApp = true,
             };
+            deployer.DeployCompleted += async (object sender, DeployEventArgs e) =>
+            {
+                var response = e.Success
+                    ? $"Successfully deployed app to: {e.Device.Name}"
+                    : $"Failed to deploy app to: {e.Device.Name}";
+                await ctx.RespondAsync(response);
+            };
             await ctx.RespondAsync("Starting resign...");
             if (!deployer.Resign(megaLink, version))
             {
                 await ctx.RespondAsync($"Failed to resign IPA");
                 return;
             }
-            await ctx.RespondAsync($"Resign complete, starting deployment to {phoneNames}...");
 
-            var result = deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
-            var successful = result.Item1.Count > 0 ? $"Successfully deployed app to:\n{string.Join(", ", result.Item1)}" : null;
-            var failed = result.Item2.Count > 0 ? $"Failed to deploy app to:\n{string.Join(", ", result.Item2)}" : null;
-            // TODO: Check for content length over 2048 and split messages if so
-            await ctx.RespondAsync($"{successful}\n{failed}");
+            var response = $"Resign complete, saved to {deployer.SignedReleaseFileName}.";
+            if (!string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"{response} Starting deployment to {phoneNames}...");
+                deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
+                return;
+            }
+
+            await ctx.RespondAsync(response);
         }
 
         [
@@ -87,6 +97,12 @@
             if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
 
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
+
             var devices = Device.GetAll();
             var deployAppDevices = new List<string>(phoneNames.RemoveSpaces());
             if (string.Compare(phoneNames, Strings.All, true) == 0)
@@ -99,36 +115,15 @@
             }
 
             var deployer = new AppDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile);
-            _logger.Debug($"Using app {appPath} for deployment.");
-            //deployer.Deploy(appPath);
-            Parallel.ForEach(deployAppDevices, async deviceName =>
+            deployer.DeployCompleted += async (object sender, DeployEventArgs e) =>
             {
-                if (!devices.ContainsKey(deviceName))
-                {
-                    _logger.Warn($"{deviceName} does not exist in device list, skipping deploy pogo.");
-                }
-                else
-                {
-                    var device = devices[deviceName];
-                    var args = $"--id {device.Uuid} --bundle {appPath}";
-                    _logger.Info($"Deploying to device {device.Name} ({device.Uuid})...");
-                    var output = Shell.Execute("ios-deploy", args, out var exitCode, true);
-                    _logger.Debug($"{device.Name} ({device.Uuid}) Deployment output: {output}");
-                    var success = output.ToLower().Contains($"[100%] installed package {appPath}");
-                    if (success)
-                    {
-                        await ctx.RespondAsync($"Deployed {appPath} to {device.Name} ({device.Uuid}) successfully.");
-                    }
-                    else
-                    {
-                        if (output.Length > 2000)
-                        {
-                            output = string.Join("", output.TakeLast(1900));
-                        }
-                        await ctx.RespondAsync($"Failed to deploy {appPath} to {device.Name} ({device.Uuid})\nOutput: {output}");
-                    }
-                }
-            });
+                var message = e.Success
+                    ? $"Successfully deployed app to: {e.Device.Name}"
+                    : $"Failed to deploy app to: {e.Device.Name}";
+                await ctx.RespondAsync(message);
+            };
+            _logger.Debug($"Using app {appPath} for deployment.");
+            deployer.Deploy(appPath, phoneNames);
         }
 
         [
@@ -150,6 +145,12 @@
 
             if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
                 return;
+
+            if (string.IsNullOrEmpty(phoneNames))
+            {
+                await ctx.RespondAsync($"No devices provided, command not executed.");
+                return;
+            }
 
             var devices = Device.GetAll();
             var removeAppDevices = phoneNames.RemoveSpaces();

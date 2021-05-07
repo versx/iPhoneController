@@ -31,6 +31,16 @@
 
         #endregion
 
+        #region Events
+
+        internal event EventHandler<DeployEventArgs> DeployCompleted;
+        private void OnDeployCompleted(Device device, bool success)
+        {
+            DeployCompleted?.Invoke(this, new DeployEventArgs(device, success));
+        }
+
+        #endregion
+
         #region Constructor
 
         public AppDeployer(string developer, string provisioningProfile)
@@ -93,7 +103,7 @@
             return result;
         }
 
-        public (List<string>, List<string>) Deploy(string appPath, string deviceNames = Strings.All)
+        public void Deploy(string appPath, string deviceNames = Strings.All)
         {
             var successful = new List<string>();
             var failed = new List<string>();
@@ -104,7 +114,6 @@
                 deployAppDevices = devices.Keys.ToList();
             }
             _logger.Info($"Deploying app {appPath} to {string.Join(", ", deployAppDevices)}");
-            // TODO: Provide better feedback of successful and failed deployments
             Parallel.ForEach(deployAppDevices, deviceName =>
             {
                 if (!devices.ContainsKey(deviceName))
@@ -117,21 +126,11 @@
                     var args = $"--id {device.Uuid} --bundle {appPath}";
                     _logger.Info($"Deploying to device {device.Name} ({device.Uuid})...");
                     var output = Shell.Execute("ios-deploy", args, out var exitCode, true);
-                    var success = output.ToLower().Contains($"[100%] installed package {appPath}");
-                    if (success)
-                    {
-                        successful.Add(device.Name);
-                        _logger.Info($"Deployed {appPath} to {device.Name} ({device.Uuid}) successfully.");
-                    }
-                    else
-                    {
-                        failed.Add(device.Name);
-                        _logger.Warn($"Failed to deploy {appPath} to {device.Name} ({device.Uuid})\nOutput: {output}");
-                    }
-                    // TODO: OnDeployCompleted event
+                    var success = output.ToLower().Contains($"[100%] installed package {appPath}") ||
+                                  output.ToLower().Contains("100%");
+                    OnDeployCompleted(device, success);
                 }
             });
-            return (successful, failed);
         }
 
         public static string GetLatestAppPath()
@@ -320,5 +319,18 @@
         }
 
         #endregion
+    }
+
+    internal class DeployEventArgs : EventArgs
+    {
+        public Device Device { get; set; }
+
+        public bool Success { get; set; }
+
+        internal DeployEventArgs(Device device, bool success)
+        {
+            Device = device;
+            Success = success;
+        }
     }
 }
