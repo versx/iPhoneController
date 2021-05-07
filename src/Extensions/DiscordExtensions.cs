@@ -48,7 +48,7 @@
             foreach (var server in servers)
             {
                 if (server.RequiredRoles.Count == 0)
-                    continue;
+                    return true;
 
                 var memberRoles = member.Roles?.Select(x => x.Id)?.ToList();
                 if (memberRoles == null)
