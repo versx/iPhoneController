@@ -123,6 +123,7 @@
                 await ctx.RespondAsync(message);
             };
             _logger.Debug($"Using app {appPath} for deployment.");
+            await ctx.RespondAsync($"Starting deployment to {phoneNames}...");
             deployer.Deploy(appPath, phoneNames);
         }
 
