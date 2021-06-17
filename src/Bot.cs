@@ -92,7 +92,7 @@
                     new CommandsNextConfiguration
                     {
                         StringPrefixes = new[] { guildConfig.CommandPrefix?.ToString() },
-                        EnableDms = false,
+                        EnableDms = true,
                         EnableMentionPrefix = string.IsNullOrEmpty(guildConfig.CommandPrefix),
                         EnableDefaultHelp = false,
                         CaseSensitive = false,
