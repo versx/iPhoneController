@@ -131,7 +131,8 @@
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
                     using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
                     {
-                        await ctx.RespondAsync(x => x.WithFile(fileName, fs));
+                        await ctx.RespondAsync(x => x.WithFile(fileName, fs)
+                            .Content = $"Screenshot for device **{device.Name}** ({device.Uuid})");
                     }
                     // TODO: await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{device.Name}** ({device.Uuid})");
                     continue;
