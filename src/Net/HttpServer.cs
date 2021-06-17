@@ -163,6 +163,10 @@
                                     var payload = JsonConvert.DeserializeObject<WebhookPayload>(data);
                                     responseMessage = await HandleDeviceRequest(payload);
                                 }
+                                else if (isGET)
+                                {
+                                    responseMessage = Strings.DefaultResponseMessage;
+                                }
                                 break;
                         }
                     }

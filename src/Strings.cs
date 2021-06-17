@@ -32,9 +32,9 @@
 
         public const string PokemonGoBundleIdentifier = "com.nianticlabs.pokemongo";
 
-        public const string XCodeUITestsBundleIdentifier = "com.apple.test.RealDeviceMap-UIControlUITests-Runner";
+        //public const string XCodeUITestsBundleIdentifier = "com.apple.test.RealDeviceMap-UIControlUITests-Runner";
 
-        public const string DefaultResponseMessage = "iPhoneController running...";
+        public const string DefaultResponseMessage = "iPhoneController is running...";
 
         public const string PlistBuddyPath = "/usr/libexec/PlistBuddy";
 
