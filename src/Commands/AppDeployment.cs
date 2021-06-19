@@ -169,7 +169,8 @@
                 var device = devices[name];
                 var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var _);
-                await ctx.RespondAsync($"Removed Pokemon Go from {device.Name}\r\nOutput: {output}");
+                var message = $"Removed Pokemon Go from {device.Name}\r\nOutput: ";
+                await ctx.RespondAsync(message + string.Join("", output.TakeLast(1900)));
             }
         }
 
