@@ -112,8 +112,8 @@ A. Run `security find-identity -p codesigning`
 Q. I'm receiveing `{"Command":"list","Output":{},"Type"::CommandOutput","Devices":[]}` when `cfgutil --format JSON list` is run.  
 A. Reinstall Apple Configurator 2 automation tools  
 
-Q. I'm tring to reapply SAM but get error "failed to get ECID for device"?  
-A. You likely have useIosDeploy = true, you need this to be false to use cfgutil to support re-applying SAM 
+Q. I'm trying to reapply SAM but get error "failed to get ECID for device"?  
+A. You likely have `useIosDeploy = true`, you need this to be "false" which uses `cfgutil` in order to support re-applying SAM.
 
 ## TODO  
 - Localization  
