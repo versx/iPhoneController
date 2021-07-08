@@ -58,12 +58,62 @@ In order to reapply the SAM profile, you'll need to do the following:
 From the `bin` folder type the following:  
 `~/.dotnet/dotnet iPhoneController.dll`  
 
+## Running with PM2 (recommended)
+Once everything is setup and running appropriately, you can add this to PM2 ecosysetm.config.js so it automatically starts:
+
+    module.exports = {
+      apps: [
+        {
+          name: "iPhoneController",
+          script: "iPhoneController.dll",
+          watch: false,
+          cwd: "/path/to/iPhoneController/bin",
+          interpreter: "/Users/you/.dotnet/dotnet",
+          instances: 1,
+          exec_mode: "fork",
+          max_restarts: 250,
+          restart_delay: 300
+        }
+      ]
+    }
+
+Adjust path and interpreter as required.  
+
+### PM2 PLEASE NOTE
+
+If you have useIosDeploy=false and the bot doesn't respond, check console.  If you get the following error or similar you will need to fix PM2 permissions, see below.
+
+    1|iPhoneController  | 21:49 [ERROR] [BOT] User xxx tried executing command screen and unknown error occurred.
+    1|iPhoneController  | : System.NullReferenceException: Object reference not set to an instance of an object.
+    1|iPhoneController  |    at iPhoneController.Commands.PhoneControl.ScreenshotAsync(CommandContext ctx, String phoneNames) in
+    /private/path/to/iPhoneController/src/Commands/PhoneControl.cs:line 115
+
+### Fixing PM2 Permissions
+1. From Mac terminal
+` cat ~/Library/LaunchAgents/pm2.admin.plist`
+
+look for the following line and note the path
+
+`<string>/usr/local/lib/node_modules/pm2/bin/pm2 resurrect</string>`
+
+2. From Mac desktop, Click the Apple, Open System Preferences  
+![image](https://user-images.githubusercontent.com/3146205/124825495-b8217200-df41-11eb-8f9a-b0f154ff12f2.png)
+3. Click Security and Privacy, click the lock to make changes and enter your password  
+![image](https://user-images.githubusercontent.com/3146205/124825572-d38c7d00-df41-11eb-8185-64aff4b2b078.png)
+4. On left, click full disk access then either click the plus and add the path from earlier OR open finder and navigate to the path and drag / drop into here  
+![image](https://user-images.githubusercontent.com/3146205/124825746-0a629300-df42-11eb-87d2-d4b73f71daa0.png)
+ 
+If you've already started iPhoneController with PM2 you'll now want to delete and relaunch after the above changes, this will now let PM2 access the files needed to run cfgutil.
+
 ## FAQ
 Q. How do I get the profile ID?  
 A. Run `security find-identity -p codesigning`  
 
 Q. I'm receiveing `{"Command":"list","Output":{},"Type"::CommandOutput","Devices":[]}` when `cfgutil --format JSON list` is run.  
 A. Reinstall Apple Configurator 2 automation tools  
+
+Q. I'm trying to reapply SAM but get error "failed to get ECID for device"?  
+A. You likely have `useIosDeploy = true`, you need this to be "false" which uses `cfgutil` in order to support re-applying SAM.
 
 ## TODO  
 - Localization  
