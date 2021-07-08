@@ -232,14 +232,6 @@
             //_logger.Debug($"Codesign result for {file}: {result}");
         }
 
-        private void DeleteMacOsxFolder(string macosxFolder)
-        {
-            if (Directory.Exists(macosxFolder))
-            {
-                Directory.Delete(macosxFolder, true);
-            }
-        }
-
         private void SignComponents(string appPath, string entitlementsPath)
         {
             var files = GetComponentFiles(appPath);
@@ -247,19 +239,6 @@
             {
                 _logger.Debug($"Signing component {file}...");
                 Codesign(file, true, entitlementsPath);
-            }
-        }
-
-        private void CopyConfig(string sourcePath, string destinationPath)
-        {
-            if (File.Exists(sourcePath))
-            {
-                _logger.Info($"Copying custom config to payload folder.");
-                File.Copy(sourcePath, destinationPath);
-            }
-            else
-            {
-                _logger.Warn($"No custom config.json file found at {sourcePath}");
             }
         }
 
@@ -274,7 +253,28 @@
             }
         }
 
-        private bool DownloadFile(string megaLink, string destinationPath)
+        private static void DeleteMacOsxFolder(string macosxFolder)
+        {
+            if (Directory.Exists(macosxFolder))
+            {
+                Directory.Delete(macosxFolder, true);
+            }
+        }
+
+        private static void CopyConfig(string sourcePath, string destinationPath)
+        {
+            if (File.Exists(sourcePath))
+            {
+                _logger.Info($"Copying custom config to payload folder.");
+                File.Copy(sourcePath, destinationPath);
+            }
+            else
+            {
+                _logger.Warn($"No custom config.json file found at {sourcePath}");
+            }
+        }
+
+        private static bool DownloadFile(string megaLink, string destinationPath)
         {
             var result = Shell.Execute("megadl", $"{megaLink} --path={destinationPath}", out var megadlExitCode);
             return megadlExitCode == 0 || (result?.ToLower().Contains("downloaded") ?? false);
@@ -309,7 +309,7 @@
             return list;
         }
 
-        private void CreateTempDirectory(string tempDir)
+        private static void CreateTempDirectory(string tempDir)
         {
             if (!Directory.Exists(tempDir))
             {

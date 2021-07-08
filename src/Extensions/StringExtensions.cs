@@ -19,7 +19,7 @@
                 return string.Empty;
             }
 
-            return value.Substring(startIndex, afterStartIndex - startIndex);
+            return value[startIndex..afterStartIndex];
         }
 
         public static string[] RemoveSpaces(this string value)

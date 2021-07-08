@@ -15,13 +15,14 @@
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
     using iPhoneController.Net;
+    using Microsoft.Extensions.DependencyInjection;
 
     public class Bot
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("BOT");
 
         private readonly Dictionary<ulong, DiscordClient> _guilds;
-        private readonly CommandsNextModule _commands;
+        private readonly CommandsNextExtension _commands;
         private readonly Config _config;
         private readonly HttpServer _server;
 
@@ -42,16 +43,18 @@
                     {
                         if (guild != null)
                         {
-                            foreach (var (_, server) in _config.Servers)
+                            foreach (var (serverId, server) in _config.Servers)
                             {
-                                var owner = await guild.GetUserAsync(server.OwnerId);
+                                if (!guild.Guilds.ContainsKey(serverId))
+                                    continue;
+
+                                var owner = await guild.Guilds[serverId].GetMemberAsync(server.OwnerId);
                                 if (owner == null)
                                 {
                                     _logger.Warn($"Failed to get owner from id {server.OwnerId}.");
                                     return;
                                 }
-
-                                await guild.SendDirectMessage(owner, Strings.CrashMessage, null);
+                                await owner.SendDirectMessage(Strings.CrashMessage, null);
                             }
                         }
                     }
@@ -62,35 +65,39 @@
             {
                 var client = new DiscordClient(new DiscordConfiguration
                 {
-                    AutomaticGuildSync = true,
                     AutoReconnect = true,
-                    EnableCompression = true,
+                    AlwaysCacheMembers = true,
+                    GatewayCompressionLevel = GatewayCompressionLevel.Payload,
                     Token = guildConfig.Token,
                     TokenType = TokenType.Bot,
-                    UseInternalLogHandler = true
+                    MinimumLogLevel = Microsoft.Extensions.Logging.LogLevel.Error,
+                    Intents = DiscordIntents.DirectMessages
+                        | DiscordIntents.GuildMembers
+                        | DiscordIntents.GuildMessages
+                        | DiscordIntents.GuildMessageTyping
+                        | DiscordIntents.GuildPresences
+                        | DiscordIntents.Guilds,
+                    ReconnectIndefinitely = true,
                 });
                 client.Ready += Client_Ready;
                 client.ClientErrored += Client_ClientErrored;
-                client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
+                //client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
 
-                DependencyCollection dep;
-                using (var d = new DependencyCollectionBuilder())
-                {
-                    d.AddInstance(new Dependencies(_config));
-                    dep = d.Build();
-                }
+                var servicesCol = new ServiceCollection()
+                    .AddSingleton(typeof(Config), _config);
+                var services = servicesCol.BuildServiceProvider();
 
                 _commands = client.UseCommandsNext
                 (
                     new CommandsNextConfiguration
                     {
-                        StringPrefix = guildConfig.CommandPrefix?.ToString(),
+                        StringPrefixes = new[] { guildConfig.CommandPrefix?.ToString() },
                         EnableDms = true,
                         EnableMentionPrefix = string.IsNullOrEmpty(guildConfig.CommandPrefix),
                         EnableDefaultHelp = false,
                         CaseSensitive = false,
                         IgnoreExtraArguments = true,
-                        Dependencies = dep
+                        Services = services,
                     }
                 );
                 _guilds.Add(guildId, client);
@@ -128,33 +135,34 @@
 
         #region Discord Events
 
-        private async Task Client_Ready(ReadyEventArgs e)
+        private async Task Client_Ready(DiscordClient client, ReadyEventArgs e)
         {
             _logger.Info($"[DISCORD] Connected.");
             _logger.Info($"[DISCORD] Current Application:");
-            _logger.Info($"[DISCORD] Name: {e.Client.CurrentApplication.Name}");
-            _logger.Info($"[DISCORD] Description: {e.Client.CurrentApplication.Description}");
-            _logger.Info($"[DISCORD] Owner: {e.Client.CurrentApplication.Owner.Username}#{e.Client.CurrentApplication.Owner.Discriminator}");
+            _logger.Info($"[DISCORD] Name: {client.CurrentApplication.Name}");
+            _logger.Info($"[DISCORD] Description: {client.CurrentApplication.Description}");
+            var owners = string.Join("\n", client.CurrentApplication.Owners.Select(x => $"{x.Username}#{x.Discriminator}"));
+            _logger.Info($"[DISCORD] Owner: {owners}");
             _logger.Info($"[DISCORD] Current User:");
-            _logger.Info($"[DISCORD] Id: {e.Client.CurrentUser.Id}");
-            _logger.Info($"[DISCORD] Name: {e.Client.CurrentUser.Username}#{e.Client.CurrentUser.Discriminator}");
-            _logger.Info($"[DISCORD] Email: {e.Client.CurrentUser.Email}");
+            _logger.Info($"[DISCORD] Id: {client.CurrentUser.Id}");
+            _logger.Info($"[DISCORD] Name: {client.CurrentUser.Username}#{client.CurrentUser.Discriminator}");
+            _logger.Info($"[DISCORD] Email: {client.CurrentUser.Email}");
             _logger.Info($"Machine Name: {Environment.MachineName}");
 
             await Task.CompletedTask;
         }
 
-        private async Task Client_ClientErrored(ClientErrorEventArgs e)
+        private async Task Client_ClientErrored(DiscordClient client, ClientErrorEventArgs e)
         {
             _logger.Error(e.Exception);
 
             await Task.CompletedTask;
         }
 
-        private async Task Commands_CommandExecuted(CommandExecutionEventArgs e)
+        private async Task Commands_CommandExecuted(CommandsNextExtension commands, CommandExecutionEventArgs e)
         {
             // let's log the name of the command and user
-            e.Context.Client.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, Strings.BotName, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+            _logger.Debug($"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
 
             // since this method is not async, let's return
             // a completed task, so that no additional work
@@ -162,9 +170,9 @@
             await Task.CompletedTask;
         }
 
-        private async Task Commands_CommandErrored(CommandErrorEventArgs e)
+        private async Task Commands_CommandErrored(CommandsNextExtension commands, CommandErrorEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, Strings.BotName, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? e.Context.Message.Content}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+            _logger.Error($"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? e.Context.Message.Content}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
 
             // let's check if the error is a result of lack of required permissions
             if (e.Exception is DSharpPlus.CommandsNext.Exceptions.ChecksFailedException)
@@ -183,16 +191,17 @@
             }
             else if (e.Exception is ArgumentException)
             {
+                var arguments = e.Command.Overloads.First();
                 // The user lacks required permissions, 
                 var emoji = DiscordEmoji.FromName(e.Context.Client, ":x:");
 
-                var example = $"Command Example: ```<prefix>{e.Command.Name} {string.Join(" ", e.Command.Arguments.Select(x => x.IsOptional ? $"[{x.Name}]" : x.Name))}```\r\n*Parameters in brackets are optional.*";
+                var example = $"Command Example: ```<prefix>{e.Command.Name} {string.Join(" ", arguments.Arguments.Select(x => x.IsOptional ? $"[{x.Name}]" : x.Name))}```\r\n*Parameters in brackets are optional.*";
 
                 // let's wrap the response into an embed
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = $"{emoji} Invalid Argument(s)",
-                    Description = $"{string.Join(Environment.NewLine, e.Command.Arguments.Select(x => $"Parameter **{x.Name}** expects type **{x.Type}.**"))}.\r\n\r\n{example}",
+                    Description = $"{string.Join(Environment.NewLine, arguments.Arguments.Select(x => $"Parameter **{x.Name}** expects type **{x.Type}.**"))}.\r\n\r\n{example}",
                     Color = new DiscordColor(0xFF0000) // red
                 };
                 await e.Context.RespondAsync(string.Empty, embed: embed);
@@ -207,6 +216,7 @@
             }
         }
 
+        /*
         private void DebugLogger_LogMessageReceived(object sender, DebugLogMessageEventArgs e)
         {
             if (e.Application == "REST")
@@ -260,6 +270,7 @@
             Console.WriteLine(text);
             Console.ResetColor();
         }
+        */
 
         #endregion
     }

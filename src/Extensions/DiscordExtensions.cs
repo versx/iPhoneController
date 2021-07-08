@@ -15,29 +15,29 @@
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("DISCORD_EXT");
 
-        public static async Task<DiscordMessage> SendDirectMessage(this DiscordClient client, DiscordUser user, DiscordEmbed embed)
+        public static async Task<DiscordMessage> SendDirectMessage(this DiscordMember member, DiscordEmbed embed)
         {
             if (embed == null)
                 return null;
 
-            return await client.SendDirectMessage(user, string.Empty, embed);
+            return await member.SendDirectMessage(string.Empty, embed);
         }
 
-        public static async Task<DiscordMessage> SendDirectMessage(this DiscordClient client, DiscordUser user, string message, DiscordEmbed embed)
+        public static async Task<DiscordMessage> SendDirectMessage(this DiscordMember member, string message, DiscordEmbed embed)
         {
             try
             {
-                var dm = await client.CreateDmAsync(user);
+                var dm = await member.CreateDmChannelAsync();
                 if (dm != null)
                 {
-                    var msg = await dm.SendMessageAsync(message, false, embed);
+                    var msg = await member.SendMessageAsync(message, embed);
                     return msg;
                 }
             }
             catch (Exception)
             {
                 //_logger.Error(ex);
-                _logger.Error($"Failed to send DM to user {user.Username}.");
+                _logger.Error($"Failed to send DM to user {member.Username}.");
             }
 
             return null;

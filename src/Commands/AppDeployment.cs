@@ -8,20 +8,21 @@
     using DSharpPlus.CommandsNext;
     using DSharpPlus.CommandsNext.Attributes;
 
+    using iPhoneController.Configuration;
     using iPhoneController.Deployment;
     using iPhoneController.Diagnostics;
     using iPhoneController.Extensions;
     using iPhoneController.Models;
     using iPhoneController.Utils;
 
-    public class AppDeployment
+    public class AppDeployment : BaseCommandModule
     {
         private static readonly IEventLogger _logger = EventLogger.GetLogger("DEPLOYMENT");
-        private readonly Dependencies _dep;
+        private readonly Config _config;
 
-        public AppDeployment(Dependencies dep)
+        public AppDeployment(Config config)
         {
-            _dep = dep;
+            _config = config;
         }
 
         #region App Management
@@ -36,19 +37,19 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames)
         {
-            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+            if (ctx.Guild?.Id == null || !_config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
 
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
+            if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
+            if (!ctx.Channel.Id.IsValidChannel(_config.Servers.Values.ToList()))
                 return;
 
-            var deployer = new AppDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile)
+            var deployer = new AppDeployer(_config.Developer, _config.ProvisioningProfile)
             {
                 ResignApp = true,
             };
@@ -85,16 +86,16 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames)
         {
-            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+            if (ctx.Guild?.Id == null || !_config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
 
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
+            if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
+            if (!ctx.Channel.Id.IsValidChannel(_config.Servers.Values.ToList()))
                 return;
 
             if (string.IsNullOrEmpty(phoneNames))
@@ -114,7 +115,7 @@
                 return;
             }
 
-            var deployer = new AppDeployer(_dep.Config.Developer, _dep.Config.ProvisioningProfile);
+            var deployer = new AppDeployer(_config.Developer, _config.ProvisioningProfile);
             deployer.DeployCompleted += async (object sender, DeployEventArgs e) =>
             {
                 var message = e.Success
@@ -135,16 +136,16 @@
             [Description("iPhone names i.e. `iPhoneAB1SE`. Comma delimiter supported `iPhoneAB1SE,iPhoneCD2SE`"), RemainingText]
             string phoneNames)
         {
-            if (ctx.Guild?.Id == null || !_dep.Config.Servers.ContainsKey(ctx.Guild.Id))
+            if (ctx.Guild?.Id == null || !_config.Servers.ContainsKey(ctx.Guild.Id))
                 return;
 
-            if (!ctx.Member.HasRequiredRoles(_dep.Config.Servers.Values.ToList()))
+            if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
                 await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
-            if (!ctx.Channel.Id.IsValidChannel(_dep.Config.Servers.Values.ToList()))
+            if (!ctx.Channel.Id.IsValidChannel(_config.Servers.Values.ToList()))
                 return;
 
             if (string.IsNullOrEmpty(phoneNames))
@@ -168,7 +169,8 @@
                 var device = devices[name];
                 var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var _);
-                await ctx.RespondAsync($"Removed Pokemon Go from {device.Name}\r\nOutput: {output}");
+                var message = $"Removed Pokemon Go from {device.Name}\r\nOutput: ";
+                await ctx.RespondAsync(message + string.Join("", output.TakeLast(1900)));
             }
         }
 
