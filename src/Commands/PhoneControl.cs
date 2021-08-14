@@ -45,7 +45,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -68,7 +68,7 @@
                     Title = $"{Environment.MachineName} Device List ({keys.Count:N0}) {count}",
                     Color = DiscordColor.Blurple
                 };
-                await ctx.RespondAsync(embed: eb);
+                await ctx.Channel.SendMessageAsync(embed: eb);
             }
         }
 
@@ -85,7 +85,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -94,13 +94,13 @@
 
             if (!Shell.CommandExists("idevicescreenshot"))
             {
-                await ctx.RespondAsync($"Cannot take screenshot, `idevicescreenshot` not installed.");
+                await ctx.Channel.SendMessageAsync($"Cannot take screenshot, `idevicescreenshot` not installed.");
                 return;
             }
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -131,7 +131,7 @@
                     //var message = exitCode == 0 ? $"Restarting device {name} ({uuid})" : output;
                     using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
                     {
-                        await ctx.RespondAsync(x => x.WithFile(fileName, fs)
+                        await ctx.Channel.SendMessageAsync(x => x.WithFile(fileName, fs)
                             .Content = $"Screenshot for device **{device.Name}** ({device.Uuid})");
                     }
                     // TODO: await ctx.RespondWithFileAsync(fileName, $"Screenshot for device **{device.Name}** ({device.Uuid})");
@@ -149,7 +149,7 @@
                     Title = "Screenshots failed on the following devices",
                     Description = string.Join("\r\n", devicesFailed.Select(x => $"- **{x.Key}**: {x.Value}"))
                 };
-                await ctx.RespondAsync(embed: eb);
+                await ctx.Channel.SendMessageAsync(embed: eb);
             }
         }
 
@@ -166,7 +166,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -207,7 +207,7 @@
 
             if (dict.Count == 0)
             {
-                await ctx.RespondAsync($"Failed to get device info from any devices.");
+                await ctx.Channel.SendMessageAsync($"Failed to get device info from any devices.");
                 return;
             }
 
@@ -217,7 +217,7 @@
                 Title = $"**{Environment.MachineName}** Device iOS Versions ({devices.Count:N0})",
                 Description = string.Join("\r\n", dict.Select(x => $"- **{x.Key}**: {x.Value.Replace("\n", null)}"))
             };
-            await ctx.RespondAsync(embed: eb);
+            await ctx.Channel.SendMessageAsync(embed: eb);
         }
 
         #endregion
@@ -237,7 +237,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -246,7 +246,7 @@
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -267,12 +267,12 @@
                 // Check if we have the ECID for device
                 if (string.IsNullOrEmpty(device.Ecid))
                 {
-                    await ctx.RespondAsync($"Failed to get ECID for device {device.Name} ({device.Uuid}) to reapply SAM profile");
+                    await ctx.Channel.SendMessageAsync($"Failed to get ECID for device {device.Name} ({device.Uuid}) to reapply SAM profile");
                     continue;
                 }
                 // Send HTTP GET request to device IP address
                 var result = await Device.ReapplySingleAppModeProfile(device);
-                await ctx.RespondAsync
+                await ctx.Channel.SendMessageAsync
                 (
                     result
                     ? $"Reapplied SAM profile for device {device.Name} ({device.Uuid})"
@@ -294,7 +294,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -303,7 +303,7 @@
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -324,12 +324,12 @@
                 // Check if we have IP address for device
                 if (string.IsNullOrEmpty(device.IPAddress))
                 {
-                    await ctx.RespondAsync($"Failed to get IP address for device {device.Name} ({device.Uuid}) to restart game");
+                    await ctx.Channel.SendMessageAsync($"Failed to get IP address for device {device.Name} ({device.Uuid}) to restart game");
                     continue;
                 }
                 // Send HTTP GET request to device IP address
                 var data = NetUtils.Get($"http://{device.IPAddress}:8080/restart");
-                await ctx.RespondAsync
+                await ctx.Channel.SendMessageAsync
                 (
                     string.IsNullOrEmpty(data)
                     ? $"Reopening game for device {device.Name} ({device.Uuid})"
@@ -351,7 +351,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -360,13 +360,13 @@
 
             if (!Shell.CommandExists("idevicediagnostics"))
             {
-                await ctx.RespondAsync($"Cannot reboot device, `idevicediagnostics` not installed.");
+                await ctx.Channel.SendMessageAsync($"Cannot reboot device, `idevicediagnostics` not installed.");
                 return;
             }
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -385,7 +385,7 @@
                 var device = devices[name];
                 var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} restart", out var exitCode);
                 var message = exitCode == 0 ? $"Restarting device {device.Name} ({device.Uuid})" : output;
-                await ctx.RespondAsync(message);
+                await ctx.Channel.SendMessageAsync(message);
             }
         }
 
@@ -402,7 +402,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -411,7 +411,7 @@
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -431,7 +431,7 @@
                 var device = devices[name];
                 var output = Shell.Execute("idevicediagnostics", $"-u {device.Uuid} shutdown", out var exitCode);
                 var message = exitCode == 0 ? $"Shutting down device {device.Name} ({device.Uuid})" : output;
-                await ctx.RespondAsync(message);
+                await ctx.Channel.SendMessageAsync(message);
             }
         }
 
@@ -450,7 +450,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -463,7 +463,7 @@
 
             // REVIEW: Possibly use managed Process class instead of relying on command line.
             var output = Shell.Execute("killall", processName, out var exitCode);
-            await ctx.RespondAsync(exitCode == 0 ? $"{processName} killed." : $"{Environment.MachineName} Result: {output}");
+            await ctx.Channel.SendMessageAsync(exitCode == 0 ? $"{processName} killed." : $"{Environment.MachineName} Result: {output}");
         }
 
         #endregion

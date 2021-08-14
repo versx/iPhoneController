@@ -42,7 +42,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -58,24 +58,24 @@
                 var response = e.Success
                     ? $"Successfully deployed app to: {e.Device.Name}"
                     : $"Failed to deploy app to: {e.Device.Name}";
-                await ctx.RespondAsync(response);
+                await ctx.Channel.SendMessageAsync(response);
             };
-            await ctx.RespondAsync("Starting resign...");
+            await ctx.Channel.SendMessageAsync("Starting resign...");
             if (!deployer.Resign(megaLink, version))
             {
-                await ctx.RespondAsync($"Failed to resign IPA");
+                await ctx.Channel.SendMessageAsync($"Failed to resign IPA");
                 return;
             }
 
             var response = $"Resign complete, saved to {deployer.SignedReleaseFileName}.";
             if (!string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"{response} Starting deployment to {phoneNames}...");
+                await ctx.Channel.SendMessageAsync($"{response} Starting deployment to {phoneNames}...");
                 deployer.Deploy(deployer.SignedReleaseFileName, phoneNames);
                 return;
             }
 
-            await ctx.RespondAsync(response);
+            await ctx.Channel.SendMessageAsync(response);
         }
 
         [
@@ -91,7 +91,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -100,7 +100,7 @@
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -111,7 +111,7 @@
             var appPath = AppDeployer.GetLatestAppPath();
             if (string.IsNullOrEmpty(appPath))
             {
-                await ctx.RespondAsync($"No signed app found, make sure to run 'resign' command first.");
+                await ctx.Channel.SendMessageAsync($"No signed app found, make sure to run 'resign' command first.");
                 return;
             }
 
@@ -121,10 +121,10 @@
                 var message = e.Success
                     ? $"Successfully deployed app to: {e.Device.Name}"
                     : $"Failed to deploy app to: {e.Device.Name}";
-                await ctx.RespondAsync(message);
+                await ctx.Channel.SendMessageAsync(message);
             };
             _logger.Debug($"Using app {appPath} for deployment.");
-            await ctx.RespondAsync($"Starting deployment to {phoneNames}...");
+            await ctx.Channel.SendMessageAsync($"Starting deployment to {phoneNames}...");
             deployer.Deploy(appPath, phoneNames);
         }
 
@@ -141,7 +141,7 @@
 
             if (!ctx.Member.HasRequiredRoles(_config.Servers.Values.ToList()))
             {
-                await ctx.RespondAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
+                await ctx.Channel.SendMessageAsync($":no_entry: {ctx.User.Username} Unauthorized permissions.");
                 return;
             }
 
@@ -150,7 +150,7 @@
 
             if (string.IsNullOrEmpty(phoneNames))
             {
-                await ctx.RespondAsync($"No devices provided, command not executed.");
+                await ctx.Channel.SendMessageAsync($"No devices provided, command not executed.");
                 return;
             }
 
@@ -170,7 +170,7 @@
                 var args = $"--id {device.Uuid} --uninstall_only --bundle_id {Strings.PokemonGoBundleIdentifier}";
                 var output = Shell.Execute("ios-deploy", args, out var _);
                 var message = $"Removed Pokemon Go from {device.Name}\r\nOutput: ";
-                await ctx.RespondAsync(message + string.Join("", output.TakeLast(1900)));
+                await ctx.Channel.SendMessageAsync(message + string.Join("", output.TakeLast(1900)));
             }
         }
 
