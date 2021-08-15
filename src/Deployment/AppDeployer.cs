@@ -152,7 +152,14 @@
             _logger.Info($"Beginning to resign {ipaPath}");
             var outDir = Path.Combine(Path.GetTempPath(), "app");
             var payloadDir = Path.Combine(outDir, "Payload");
-            var pogoDir = Path.Combine(payloadDir, "pokemongo.app");
+            var appDir = Directory.GetDirectories(payloadDir, "*.app").FirstOrDefault();
+            var appDirName = Path.GetDirectoryName(appDir);
+            var pogoDir = Path.Combine(payloadDir, appDirName);
+            if (!Directory.Exists(pogoDir))
+            {
+                Directory.CreateDirectory(pogoDir);
+            }
+
             var pogoInfoPlist = Path.Combine(pogoDir, "Info.plist");
 
             // Create temp directory we'll be doing everything in
