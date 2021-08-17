@@ -164,8 +164,8 @@
             var pogoDir = Path.Combine(payloadDir, appDirName);
             var pogoInfoPlist = Path.Combine(pogoDir, "Info.plist");
 
-            // Delete __MAXOSX folder
-            var macosxFolder = Path.Combine(outDir, "__MAXOSX");
+            // Delete __MACOSX folder
+            var macosxFolder = Path.Combine(outDir, "__MACOSX");
             DeleteMacOsxFolder(macosxFolder);
 
             // Remove NSAllowsArbitraryLoadsInWebContent
