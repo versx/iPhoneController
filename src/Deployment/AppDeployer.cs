@@ -227,6 +227,7 @@
             if (isContinued) sb.Append("--continue ");
             sb.Append("-f -s ");
             sb.Append($@"""{_developer}"" ");
+            sb.Append("--generate-entitlement-der ");
             if (!string.IsNullOrEmpty(entitlementsPath))
                 sb.Append($"--entitlements {entitlementsPath} ");
             sb.Append(file);
