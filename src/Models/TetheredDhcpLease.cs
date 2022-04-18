@@ -6,6 +6,8 @@
 
     class TetheredDhcpLease
     {
+        public const string DhcpClientLeasesFilePath = "/var/db/dhcp_leases";
+
         // name
         public string Name { get; set; }
 
@@ -24,41 +26,43 @@
         public static List<TetheredDhcpLease> ParseDhcpLeases()
         {
             var list = new List<TetheredDhcpLease>();
-            var leasesPath = "/var/db/dhcpd_leases";
-            if (File.Exists(leasesPath))
+            if (!File.Exists(DhcpClientLeasesFilePath))
             {
-                var lines = File.ReadAllLines(leasesPath);
-                TetheredDhcpLease lease = null;
-                foreach (var line in lines)
+                Console.WriteLine($"DHCP client lease database at {DhcpClientLeasesFilePath} does not exist...");
+                return list;
+            }
+
+            var lines = File.ReadAllLines(DhcpClientLeasesFilePath);
+            TetheredDhcpLease lease = null;
+            foreach (var line in lines)
+            {
+                if (line.Contains("{"))
                 {
-                    if (line.Contains("{"))
-                    {
-                        lease = new TetheredDhcpLease();
-                    }
-                    else if (line.Contains("name="))
-                    {
-                        lease.Name = line.Replace("name=", "").Trim('\t');
-                    }
-                    else if (line.Contains("ip_address="))
-                    {
-                        lease.IpAddress = line.Replace("ip_address=", "").Trim('\t');
-                    }
-                    else if (line.Contains("hw_address="))
-                    {
-                        lease.MacAddress = line.Replace("hw_address=", "").Trim('\t');
-                    }
-                    else if (line.Contains("identifier="))
-                    {
-                        lease.Identifier = line.Replace("identifier=", "").Trim('\t');
-                    }
-                    else if (line.Contains("lease="))
-                    {
-                        lease.Lease = line.Replace("lease=", "").Trim('\t');
-                    }
-                    else if (line.Contains("}"))
-                    {
-                        list.Add(lease);
-                    }
+                    lease = new TetheredDhcpLease();
+                }
+                else if (line.Contains("name="))
+                {
+                    lease.Name = line.Replace("name=", "").Trim('\t');
+                }
+                else if (line.Contains("ip_address="))
+                {
+                    lease.IpAddress = line.Replace("ip_address=", "").Trim('\t');
+                }
+                else if (line.Contains("hw_address="))
+                {
+                    lease.MacAddress = line.Replace("hw_address=", "").Trim('\t');
+                }
+                else if (line.Contains("identifier="))
+                {
+                    lease.Identifier = line.Replace("identifier=", "").Trim('\t');
+                }
+                else if (line.Contains("lease="))
+                {
+                    lease.Lease = line.Replace("lease=", "").Trim('\t');
+                }
+                else if (line.Contains("}"))
+                {
+                    list.Add(lease);
                 }
             }
             return list;

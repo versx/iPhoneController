@@ -68,7 +68,7 @@
             var data = File.ReadAllText(filePath);
             if (string.IsNullOrEmpty(data))
             {
-                _logger.Error($"{filePath} database is empty.");
+                _logger.Error($"{filePath} file is empty.");
                 return default;
             }
 

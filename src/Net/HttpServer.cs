@@ -153,19 +153,18 @@
                         var data = sr.ReadToEnd();
                         var endpoint = context.Request.RawUrl;
                         var method = context.Request.HttpMethod;
-                        var isGET = string.Compare(method, "GET", true) == 0;
-                        var isPOST = string.Compare(method, "POST", true) == 0;
                         switch (endpoint)
                         {
                             case "/":
-                                if (isPOST)
+                                switch (method)
                                 {
-                                    var payload = JsonConvert.DeserializeObject<WebhookPayload>(data);
-                                    responseMessage = await HandleDeviceRequest(payload);
-                                }
-                                else if (isGET)
-                                {
-                                    responseMessage = Strings.DefaultResponseMessage;
+                                    case "GET":
+                                        responseMessage = Strings.DefaultResponseMessage;
+                                        break;
+                                    case "POST":
+                                        var payload = JsonConvert.DeserializeObject<WebhookPayload>(data);
+                                        responseMessage = await HandleDeviceRequest(payload);
+                                        break;
                                 }
                                 break;
                         }
@@ -209,7 +208,7 @@
                 return existsMessage;
             }
 
-            var device = (Device)devices[payload.Device];
+            var device = devices[payload.Device];
             switch (payload.Type.ToLower())
             {
                 case "restart":
@@ -272,7 +271,7 @@
             }
         }
 
-        private HttpListener CreateListener()
+        private static HttpListener CreateListener()
         {
             return new HttpListener();
         }
