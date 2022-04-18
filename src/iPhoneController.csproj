@@ -30,8 +30,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="DSharpPlus" Version="4.0.1" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.1" />
+    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01111" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01111" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
